@@ -1,0 +1,928 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>МЕТЕОСВОДКА // Москва</title>
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        crossorigin="anonymous">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<!-- =========================================================
+     РАЗДЕЛ 0. ДЕГРАДИРОВАННЫЙ РЕЖИМ (если данные устарели)
+     ========================================================= -->
+
+
+<!-- =========================================================
+     РАЗДЕЛ 1. ШАПКА-ФОРМУЛЯР
+     ========================================================= -->
+<header class="formulyar">
+  <div class="container-fluid">
+    <div class="row align-items-start">
+      <div class="col-md-8">
+        <div class="formulyar__stamp">УТВ.</div>
+        <h1 class="formulyar__title">МЕТЕОСВОДКА</h1>
+        <div class="formulyar__subtitle">Прогноз погоды · Open-Meteo API · CC BY 4.0</div>
+      </div>
+      <div class="col-md-4 text-md-end">
+        <table class="formulyar__meta-table">
+          <tr>
+            <td class="formulyar__meta-key">ОБЪЕКТ:</td>
+            <td class="formulyar__meta-val" id="hdr-location">Москва</td>
+          </tr>
+          <tr>
+            <td class="formulyar__meta-key">КООРД.:</td>
+            <td class="formulyar__meta-val">55.7558° N,
+              37.6176° E</td>
+          </tr>
+          <tr>
+            <td class="formulyar__meta-key">СГЕНЕР.:</td>
+            <td class="formulyar__meta-val">2026-06-03 22:41:22 UTC</td>
+          </tr>
+          <tr>
+            <td class="formulyar__meta-key">ОБНОВЛ.:</td>
+            <td class="formulyar__meta-val">2026-06-03 22:41:22 UTC</td>
+          </tr>
+          <tr>
+            <td class="formulyar__meta-key">РЕЖИМ:</td>
+            <td class="formulyar__meta-val ">
+              НОМИНАЛ
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container-fluid py-3">
+
+<!-- =========================================================
+     РАЗДЕЛ 2. ПОИСК ЛОКАЦИИ
+     ========================================================= -->
+<section class="wd-card mb-3" id="section-search">
+  <div class="wd-card__header">§ 2. ВЫБОР ОБЪЕКТА НАБЛЮДЕНИЯ</div>
+  <div class="wd-card__body">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-6">
+        <label class="wd-label" for="geo-input">Название населённого пункта:</label>
+        <div class="input-group">
+          <input type="text" id="geo-input" class="form-control wd-input"
+                 placeholder="Москва, Берлин, New York…"
+                 autocomplete="off">
+          <button class="btn wd-btn-primary" id="geo-search-btn" type="button">
+            ПОИСК
+          </button>
+        </div>
+        <div id="geo-results" class="geo-dropdown" style="display:none"></div>
+      </div>
+      <div class="col-md-6">
+        <div class="wd-label">Избранное:</div>
+        <div id="favorites-list" class="favorites-list"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     РАЗДЕЛ 3. ТЕКУЩЕЕ СОСТОЯНИЕ
+     ========================================================= -->
+<section class="wd-card mb-3" id="section-current">
+  <div class="wd-card__header">§ 3. ТЕКУЩЕЕ СОСТОЯНИЕ <span class="wd-badge">2026-06-04</span></div>
+  <div class="wd-card__body">
+    
+    <div class="alerts-block mb-3">
+      
+      <div class="alert-item alert-item--alert">
+        ⚡ Порывы ветра 25.9 м/с (порог 15.0 м/с)
+      </div>
+      
+    </div>
+    
+
+    <div class="row g-3">
+      <div class="col-6 col-md-3">
+        <div class="meteo-cell">
+          <div class="meteo-cell__label">ТЕМПЕРАТУРА</div>
+          <div class="meteo-cell__value" id="cur-temp">16.0°C</div>
+          <div class="meteo-cell__sub">ощущается 15.2°C</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="meteo-cell">
+          <div class="meteo-cell__label">ВЛАЖНОСТЬ</div>
+          <div class="meteo-cell__value" id="cur-hum">58%</div>
+          <div class="meteo-cell__sub">точка росы 7.8°C</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="meteo-cell">
+          <div class="meteo-cell__label">ВЕТЕР</div>
+          <div class="meteo-cell__value" id="cur-wind">1.6 м/с</div>
+          <div class="meteo-cell__sub">порывы 2.9 м/с</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="meteo-cell">
+          <div class="meteo-cell__label">ОСАДКИ</div>
+          <div class="meteo-cell__value" id="cur-precip">0%</div>
+          <div class="meteo-cell__sub">0.0 мм</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Штампы статуса -->
+    <div class="status-stamps mt-3">
+      <span class="stamp stamp--ok">
+        ВЕТЕР
+      </span>
+      <span class="stamp stamp--ok">
+        ОСАДКИ
+      </span>
+      <span class="stamp stamp--ok">
+        КОМФОРТНО
+      </span>
+      
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     РАЗДЕЛ 4. ГРАФИКИ
+     ========================================================= -->
+<section class="wd-card mb-3" id="section-charts">
+  <div class="wd-card__header">§ 4. ГРАФИКИ ПРОГНОЗА (48 ЧАСОВ)</div>
+  <div class="wd-card__body">
+    <div class="row g-3">
+      <div class="col-12 col-lg-6">
+        <div class="chart-wrap">
+          <div class="chart-wrap__title">ТЕМПЕРАТУРА (°C)</div>
+          <canvas id="chart-temp" height="120"></canvas>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="chart-wrap">
+          <div class="chart-wrap__title">ОСАДКИ / ВЕРОЯТНОСТЬ (%)</div>
+          <canvas id="chart-precip" height="120"></canvas>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="chart-wrap">
+          <div class="chart-wrap__title">ВЕТЕР / ПОРЫВЫ (М/С)</div>
+          <canvas id="chart-wind" height="120"></canvas>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="chart-wrap">
+          <div class="chart-wrap__title">ВЛАЖНОСТЬ (%)</div>
+          <canvas id="chart-hum" height="120"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     РАЗДЕЛ 5. ПОЧАСОВАЯ ТАБЛИЦА
+     ========================================================= -->
+<section class="wd-card mb-3" id="section-hourly">
+  <div class="wd-card__header">§ 5. ПОЧАСОВОЙ ПРОГНОЗ (24 ЧАСА)</div>
+  <div class="wd-card__body table-responsive">
+    <table class="wd-table">
+      <thead>
+        <tr>
+          <th>ВРЕМЯ</th>
+          <th>t°C</th>
+          <th>ОЩУщ.</th>
+          <th>ВЛЖ.%</th>
+          <th>ОС.%</th>
+          <th>ВЕТЕР</th>
+          <th>ПОРЫВЫ</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr class="">
+          <td>00:00</td>
+          <td>16.0</td>
+          <td>15.2</td>
+          <td>58</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              0%
+            </span>
+          </td>
+          <td>1.6&nbsp;м/с</td>
+          <td>2.9&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>01:00</td>
+          <td>15.0</td>
+          <td>14.2</td>
+          <td>62</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              3%
+            </span>
+          </td>
+          <td>1.9&nbsp;м/с</td>
+          <td>2.5&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>02:00</td>
+          <td>14.3</td>
+          <td>13.0</td>
+          <td>64</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              8%
+            </span>
+          </td>
+          <td>4.2&nbsp;м/с</td>
+          <td>5.4&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>03:00</td>
+          <td>14.1</td>
+          <td>13.9</td>
+          <td>73</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              5%
+            </span>
+          </td>
+          <td>0.7&nbsp;м/с</td>
+          <td>5.8&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>04:00</td>
+          <td>13.6</td>
+          <td>13.3</td>
+          <td>77</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              3%
+            </span>
+          </td>
+          <td>1.8&nbsp;м/с</td>
+          <td>3.2&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>05:00</td>
+          <td>13.6</td>
+          <td>13.4</td>
+          <td>77</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              0%
+            </span>
+          </td>
+          <td>0.5&nbsp;м/с</td>
+          <td>3.6&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>06:00</td>
+          <td>14.3</td>
+          <td>14.2</td>
+          <td>79</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              5%
+            </span>
+          </td>
+          <td>2.5&nbsp;м/с</td>
+          <td>10.8&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>07:00</td>
+          <td>16.1</td>
+          <td>16.2</td>
+          <td>73</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              0%
+            </span>
+          </td>
+          <td>2.3&nbsp;м/с</td>
+          <td>8.6&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>08:00</td>
+          <td>18.3</td>
+          <td>18.2</td>
+          <td>64</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              3%
+            </span>
+          </td>
+          <td>3.3&nbsp;м/с</td>
+          <td>11.2&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>09:00</td>
+          <td>20.2</td>
+          <td>20.1</td>
+          <td>56</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              0%
+            </span>
+          </td>
+          <td>3.1&nbsp;м/с</td>
+          <td>11.9&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>10:00</td>
+          <td>21.6</td>
+          <td>21.8</td>
+          <td>49</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              0%
+            </span>
+          </td>
+          <td>1.9&nbsp;м/с</td>
+          <td>11.5&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>11:00</td>
+          <td>22.6</td>
+          <td>23.2</td>
+          <td>45</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              8%
+            </span>
+          </td>
+          <td>2.3&nbsp;м/с</td>
+          <td>18.4&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>12:00</td>
+          <td>23.0</td>
+          <td>23.0</td>
+          <td>43</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              13%
+            </span>
+          </td>
+          <td>6.6&nbsp;м/с</td>
+          <td>22.0&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>13:00</td>
+          <td>23.1</td>
+          <td>22.7</td>
+          <td>40</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              8%
+            </span>
+          </td>
+          <td>4.8&nbsp;м/с</td>
+          <td>25.9&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>14:00</td>
+          <td>23.6</td>
+          <td>22.8</td>
+          <td>39</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              20%
+            </span>
+          </td>
+          <td>7.1&nbsp;м/с</td>
+          <td>21.6&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>15:00</td>
+          <td>23.6</td>
+          <td>22.2</td>
+          <td>38</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              18%
+            </span>
+          </td>
+          <td>7.8&nbsp;м/с</td>
+          <td>24.1&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>16:00</td>
+          <td>23.3</td>
+          <td>22.1</td>
+          <td>39</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              10%
+            </span>
+          </td>
+          <td>6.2&nbsp;м/с</td>
+          <td>22.3&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>17:00</td>
+          <td>23.2</td>
+          <td>22.4</td>
+          <td>43</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              15%
+            </span>
+          </td>
+          <td>5.3&nbsp;м/с</td>
+          <td>19.4&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>18:00</td>
+          <td>22.5</td>
+          <td>22.0</td>
+          <td>46</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              20%
+            </span>
+          </td>
+          <td>4.7&nbsp;м/с</td>
+          <td>17.3&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>19:00</td>
+          <td>21.9</td>
+          <td>21.8</td>
+          <td>48</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              13%
+            </span>
+          </td>
+          <td>1.8&nbsp;м/с</td>
+          <td>14.8&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>20:00</td>
+          <td>21.0</td>
+          <td>21.0</td>
+          <td>53</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              0%
+            </span>
+          </td>
+          <td>2.3&nbsp;м/с</td>
+          <td>12.6&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>21:00</td>
+          <td>19.1</td>
+          <td>19.2</td>
+          <td>64</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              3%
+            </span>
+          </td>
+          <td>4.0&nbsp;м/с</td>
+          <td>8.3&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>22:00</td>
+          <td>17.5</td>
+          <td>18.0</td>
+          <td>75</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              3%
+            </span>
+          </td>
+          <td>3.1&nbsp;м/с</td>
+          <td>9.7&nbsp;м/с</td>
+        </tr>
+        
+        <tr class="">
+          <td>23:00</td>
+          <td>16.9</td>
+          <td>17.1</td>
+          <td>74</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              0%
+            </span>
+          </td>
+          <td>3.2&nbsp;м/с</td>
+          <td>5.0&nbsp;м/с</td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- =========================================================
+     РАЗДЕЛ 6. СУТОЧНАЯ ТАБЛИЦА
+     ========================================================= -->
+<section class="wd-card mb-3" id="section-daily">
+  <div class="wd-card__header">§ 6. СУТОЧНЫЙ ПРОГНОЗ (7 ДНЕЙ)</div>
+  <div class="wd-card__body table-responsive">
+    <table class="wd-table">
+      <thead>
+        <tr>
+          <th>ДАТА</th>
+          <th>MAX°C</th>
+          <th>MIN°C</th>
+          <th>СРЕДН.</th>
+          <th>АМПЛИТ.</th>
+          <th>ОСАДКИ</th>
+          <th>ОС.%</th>
+          <th>ВЕТЕР</th>
+          <th>РАДИАЦИЯ</th>
+          <th>ВОСХОД</th>
+          <th>ЗАКАТ</th>
+          <th>ЧЧ≥50%</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td class="fw-bold">04.06</td>
+          <td class="text-danger">23.6</td>
+          <td class="text-primary">13.6</td>
+          <td>19.1</td>
+          <td>10.0</td>
+          <td>0.1&nbsp;мм</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              20%
+            </span>
+          </td>
+          <td>25.9&nbsp;м/с</td>
+          <td>23.3&nbsp;МДж/м²</td>
+          <td>03:50</td>
+          <td>21:05</td>
+          <td>0</td>
+        </tr>
+        
+        <tr>
+          <td class="fw-bold">05.06</td>
+          <td class="text-danger">23.5</td>
+          <td class="text-primary">13.1</td>
+          <td>18.9</td>
+          <td>10.4</td>
+          <td>0.2&nbsp;мм</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              8%
+            </span>
+          </td>
+          <td>20.2&nbsp;м/с</td>
+          <td>22.5&nbsp;МДж/м²</td>
+          <td>03:49</td>
+          <td>21:06</td>
+          <td>0</td>
+        </tr>
+        
+        <tr>
+          <td class="fw-bold">06.06</td>
+          <td class="text-danger">24.6</td>
+          <td class="text-primary">13.2</td>
+          <td>19.2</td>
+          <td>11.4</td>
+          <td>0.0&nbsp;мм</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              0%
+            </span>
+          </td>
+          <td>22.7&nbsp;м/с</td>
+          <td>27.6&nbsp;МДж/м²</td>
+          <td>03:48</td>
+          <td>21:07</td>
+          <td>0</td>
+        </tr>
+        
+        <tr>
+          <td class="fw-bold">07.06</td>
+          <td class="text-danger">24.4</td>
+          <td class="text-primary">11.8</td>
+          <td>18.6</td>
+          <td>12.6</td>
+          <td>0.0&nbsp;мм</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              4%
+            </span>
+          </td>
+          <td>23.8&nbsp;м/с</td>
+          <td>28.3&nbsp;МДж/м²</td>
+          <td>03:47</td>
+          <td>21:08</td>
+          <td>0</td>
+        </tr>
+        
+        <tr>
+          <td class="fw-bold">08.06</td>
+          <td class="text-danger">25.8</td>
+          <td class="text-primary">13.7</td>
+          <td>20.2</td>
+          <td>12.1</td>
+          <td>0.0&nbsp;мм</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              6%
+            </span>
+          </td>
+          <td>24.5&nbsp;м/с</td>
+          <td>27.4&nbsp;МДж/м²</td>
+          <td>03:47</td>
+          <td>21:09</td>
+          <td>0</td>
+        </tr>
+        
+        <tr>
+          <td class="fw-bold">09.06</td>
+          <td class="text-danger">28.4</td>
+          <td class="text-primary">16.0</td>
+          <td>22.9</td>
+          <td>12.4</td>
+          <td>0.0&nbsp;мм</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              28%
+            </span>
+          </td>
+          <td>25.9&nbsp;м/с</td>
+          <td>25.6&nbsp;МДж/м²</td>
+          <td>03:46</td>
+          <td>21:10</td>
+          <td>0</td>
+        </tr>
+        
+        <tr>
+          <td class="fw-bold">10.06</td>
+          <td class="text-danger">26.4</td>
+          <td class="text-primary">16.7</td>
+          <td>22.0</td>
+          <td>9.7</td>
+          <td>0.6&nbsp;мм</td>
+          <td>
+            <span class="prob-badge prob-badge--low">
+              20%
+            </span>
+          </td>
+          <td>29.9&nbsp;м/с</td>
+          <td>22.2&nbsp;МДж/м²</td>
+          <td>03:46</td>
+          <td>21:11</td>
+          <td>0</td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- =========================================================
+     РАЗДЕЛ 7. РАСЧЁТНЫЙ ОТДЕЛ
+     ========================================================= -->
+<section class="wd-card mb-3" id="section-calc">
+  <div class="wd-card__header">§ 7. РАСЧЁТНЫЙ ОТДЕЛ <span class="wd-badge">СОГЛ.</span></div>
+  <div class="wd-card__body">
+    <div class="row g-3">
+
+      <!-- ComfortIndex -->
+      <div class="col-12 col-md-4">
+        <div class="calc-block">
+          <div class="calc-block__title">ИНДЕКС КОМФОРТНОСТИ</div>
+          <div class="calc-block__value ci-value ci-value--комфортно">
+            87.8
+          </div>
+          <div class="calc-block__category ci-category">КОМФОРТНО</div>
+          <table class="calc-detail-table mt-2">
+            <tr><td>Штраф t°:</td><td>−7.15</td></tr>
+            <tr><td>Штраф влж.:</td><td>−2.54</td></tr>
+            <tr><td>Штраф ветер:</td><td>−0.5</td></tr>
+            <tr><td>Штраф ос.:</td><td>−1.97</td></tr>
+            <tr><td>Часов:</td><td>24</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- Walk Window -->
+      <div class="col-12 col-md-4">
+        <div class="calc-block">
+          <div class="calc-block__title">ОКНО ПРОГУЛКИ</div>
+          
+          <div class="calc-block__value">48ч</div>
+          <div class="walk-detail">
+            <div>Начало: <strong>2026-06-04 00:00</strong></div>
+            <div>Конец: <strong>2026-06-06 00:00</strong></div>
+            <div class="walk-reason mt-1">Непрерывный интервал 48ч: осадки<30.0%, ветер<10.0м/с, температура [-5.0…30.0]°C</div>
+          </div>
+          
+        </div>
+      </div>
+
+      <!-- Alerts summary -->
+      <div class="col-12 col-md-4">
+        <div class="calc-block">
+          <div class="calc-block__title">ПОРОГОВЫЕ СОБЫТИЯ</div>
+          
+          
+          <div class="threshold-row threshold-row--alert">
+            <span class="threshold-metric">wind_gust_ms</span>
+            <span class="threshold-val">25.9</span>
+            <span class="threshold-limit">/ 15.0</span>
+            <span class="threshold-regime">ALERT</span>
+          </div>
+          
+          
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Суточные метрики таблица -->
+    <div class="mt-3">
+      <div class="wd-subsection-title">СУТОЧНЫЕ МЕТРИКИ</div>
+      <div class="table-responsive">
+        <table class="wd-table wd-table--compact">
+          <thead>
+            <tr>
+              <th>ДАТА</th>
+              <th>ТСР°C</th>
+              <th>АМПЛИТ.</th>
+              <th>ЧЧ≥50%</th>
+              <th>ПОРЫВЫ макс.</th>
+              <th>РАДИАЦИЯ</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+            <tr>
+              <td>2026-06-04</td>
+              <td>19.1</td>
+              <td>10.0</td>
+              <td>0</td>
+              <td>25.9&nbsp;м/с</td>
+              <td>23.3&nbsp;МДж/м²</td>
+            </tr>
+            
+            <tr>
+              <td>2026-06-05</td>
+              <td>18.9</td>
+              <td>10.4</td>
+              <td>0</td>
+              <td>20.2&nbsp;м/с</td>
+              <td>22.5&nbsp;МДж/м²</td>
+            </tr>
+            
+            <tr>
+              <td>2026-06-06</td>
+              <td>19.2</td>
+              <td>11.4</td>
+              <td>0</td>
+              <td>22.7&nbsp;м/с</td>
+              <td>27.6&nbsp;МДж/м²</td>
+            </tr>
+            
+            <tr>
+              <td>2026-06-07</td>
+              <td>18.6</td>
+              <td>12.6</td>
+              <td>0</td>
+              <td>23.8&nbsp;м/с</td>
+              <td>28.3&nbsp;МДж/м²</td>
+            </tr>
+            
+            <tr>
+              <td>2026-06-08</td>
+              <td>20.2</td>
+              <td>12.1</td>
+              <td>0</td>
+              <td>24.5&nbsp;м/с</td>
+              <td>27.4&nbsp;МДж/м²</td>
+            </tr>
+            
+            <tr>
+              <td>2026-06-09</td>
+              <td>22.9</td>
+              <td>12.4</td>
+              <td>0</td>
+              <td>25.9&nbsp;м/с</td>
+              <td>25.6&nbsp;МДж/м²</td>
+            </tr>
+            
+            <tr>
+              <td>2026-06-10</td>
+              <td>22.0</td>
+              <td>9.7</td>
+              <td>0</td>
+              <td>29.9&nbsp;м/с</td>
+              <td>22.2&nbsp;МДж/м²</td>
+            </tr>
+            
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =========================================================
+     РАЗДЕЛ 8. ЭКСПОРТ ДАННЫХ
+     ========================================================= -->
+<section class="wd-card mb-3" id="section-export">
+  <div class="wd-card__header">§ 8. ЭКСПОРТ ДАННЫХ</div>
+  <div class="wd-card__body">
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="data/latest.json" class="btn wd-btn-secondary" download>
+        ↓ latest.json
+      </a>
+      <a href="data/metrics.json" class="btn wd-btn-secondary" download>
+        ↓ metrics.json
+      </a>
+      <a href="data/hourly.csv" class="btn wd-btn-secondary" download>
+        ↓ hourly.csv
+      </a>
+      <a href="data/daily.csv" class="btn wd-btn-secondary" download>
+        ↓ daily.csv
+      </a>
+      <button id="btn-refresh" class="btn wd-btn-primary" type="button">
+        ↻ Обновить из API
+      </button>
+      <button onclick="window.print()" class="btn wd-btn-secondary" type="button">
+        ⎙ Печать отчёта
+      </button>
+    </div>
+    <div id="refresh-status" class="mt-2 small text-muted"></div>
+  </div>
+</section>
+
+<!-- =========================================================
+     РАЗДЕЛ 9. АТРИБУЦИЯ
+     ========================================================= -->
+<footer class="wd-footer">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-8">
+        <strong>Источник данных:</strong>
+        <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>
+        — лицензия <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.
+        Данные о местоположении основаны на
+        <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a>.
+      </div>
+      <div class="col-md-4 text-md-end">
+        <span class="wd-footer__mode">
+          Следующее обновление: по расписанию (4×/сутки)
+        </span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</main><!-- /main -->
+
+<!-- Данные для графиков (JSON inline) -->
+<script id="data-hourly48" type="application/json">
+{"apparent_temperature": [15.2, 14.2, 13.0, 13.9, 13.3, 13.4, 14.2, 16.2, 18.2, 20.1, 21.8, 23.2, 23.0, 22.7, 22.8, 22.2, 22.1, 22.4, 22.0, 21.8, 21.0, 19.2, 18.0, 17.1, 16.1, 15.3, 14.3, 13.5, 12.8, 12.9, 14.3, 16.4, 18.6, 20.0, 20.7, 21.2, 22.6, 23.4, 23.9, 23.5, 23.0, 22.3, 22.1, 21.8, 21.1, 20.0, 18.5, 17.3], "labels": ["04.06 00:00", "04.06 01:00", "04.06 02:00", "04.06 03:00", "04.06 04:00", "04.06 05:00", "04.06 06:00", "04.06 07:00", "04.06 08:00", "04.06 09:00", "04.06 10:00", "04.06 11:00", "04.06 12:00", "04.06 13:00", "04.06 14:00", "04.06 15:00", "04.06 16:00", "04.06 17:00", "04.06 18:00", "04.06 19:00", "04.06 20:00", "04.06 21:00", "04.06 22:00", "04.06 23:00", "05.06 00:00", "05.06 01:00", "05.06 02:00", "05.06 03:00", "05.06 04:00", "05.06 05:00", "05.06 06:00", "05.06 07:00", "05.06 08:00", "05.06 09:00", "05.06 10:00", "05.06 11:00", "05.06 12:00", "05.06 13:00", "05.06 14:00", "05.06 15:00", "05.06 16:00", "05.06 17:00", "05.06 18:00", "05.06 19:00", "05.06 20:00", "05.06 21:00", "05.06 22:00", "05.06 23:00"], "precipitation": [0.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "precipitation_probability": [0.0, 3.0, 8.0, 5.0, 3.0, 0.0, 5.0, 0.0, 3.0, 0.0, 0.0, 8.0, 13.0, 8.0, 20.0, 18.0, 10.0, 15.0, 20.0, 13.0, 0.0, 3.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0, 8.0, 8.0, 3.0, 8.0, 8.0, 5.0, 8.0, 5.0, 5.0, 5.0, 0.0, 0.0, 0.0], "temperature_2m": [16.0, 15.0, 14.3, 14.1, 13.6, 13.6, 14.3, 16.1, 18.3, 20.2, 21.6, 22.6, 23.0, 23.1, 23.6, 23.6, 23.3, 23.2, 22.5, 21.9, 21.0, 19.1, 17.5, 16.9, 16.0, 15.2, 14.4, 13.8, 13.1, 13.1, 14.1, 16.1, 18.3, 19.8, 20.4, 21.0, 21.8, 22.5, 23.1, 23.5, 23.5, 23.1, 22.5, 22.1, 21.0, 19.5, 18.3, 17.5], "wind_gusts_10m": [2.9, 2.5, 5.4, 5.8, 3.2, 3.6, 10.8, 8.6, 11.2, 11.9, 11.5, 18.4, 22.0, 25.9, 21.6, 24.1, 22.3, 19.4, 17.3, 14.8, 12.6, 8.3, 9.7, 5.0, 4.7, 3.6, 3.6, 4.0, 4.0, 4.0, 7.6, 13.0, 14.8, 16.6, 18.4, 19.1, 16.9, 17.6, 16.9, 16.2, 17.3, 19.8, 20.2, 15.8, 14.0, 8.3, 4.0, 4.0], "wind_speed_10m": [1.6, 1.9, 4.2, 0.7, 1.8, 0.5, 2.5, 2.3, 3.3, 3.1, 1.9, 2.3, 6.6, 4.8, 7.1, 7.8, 6.2, 5.3, 4.7, 1.8, 2.3, 4.0, 3.1, 3.2, 3.2, 3.2, 3.6, 4.3, 4.0, 3.6, 2.9, 4.3, 4.5, 5.0, 4.7, 5.2, 4.2, 3.7, 3.1, 4.3, 5.0, 6.6, 5.4, 4.8, 3.4, 2.5, 2.6, 3.6]}
+</script>
+
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+  crossorigin="anonymous"></script>
+<script
+  src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"
+  crossorigin="anonymous"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

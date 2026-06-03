@@ -1,0 +1,74 @@
+# =============================================================
+# ПУТЬ        : .github/workflows/pages.yml
+# ОБОЗНАЧЕНИЕ : WD.CICD.02
+# НАИМЕНОВАНИЕ: Публикация GitHub Pages
+# ДОКУМЕНТ    : КС-СТО-1.04.СК
+# ПРОГРАММА   : Weather Dashboard
+# ЗАВИСИМОСТИ : pyproject.toml, src/weather_dashboard
+# =============================================================
+# Назначение:
+#   Генерирует данные и HTML, публикует docs/ на GitHub Pages.
+#   Запускается при push в main и по расписанию (refresh.yml).
+# =============================================================
+
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Права для публикации Pages
+permissions:
+  contents: read
+  pages:    write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Генерация отчёта
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Установить пакет
+        run: pip install -e ".[dev]"
+
+      - name: Запустить генератор
+        env:
+          RST_ENV: prod
+          RST_LOG_LEVEL: INFO
+          RST_LOG_FORMAT: json
+        run: python -m weather_dashboard
+
+      - name: Настройка Pages
+        uses: actions/configure-pages@v5
+
+      - name: Загрузить артефакт Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/
+
+  deploy:
+    name: Публикация Pages
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Развернуть на GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

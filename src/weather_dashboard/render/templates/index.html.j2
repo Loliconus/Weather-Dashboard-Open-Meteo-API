@@ -1,0 +1,460 @@
+{# ============================================================
+  ПУТЬ        : src/weather_dashboard/render/templates/index.html.j2
+  ОБОЗНАЧЕНИЕ : WD.REND.03
+  НАИМЕНОВАНИЕ: Jinja2-шаблон главной страницы дашборда
+  ДОКУМЕНТ    : КС-СТО-1.04.СК
+  ПРОГРАММА   : Weather Dashboard
+  ЗАВИСИМОСТИ : Bootstrap 5 CDN, Chart.js CDN, style.css, app.js
+  ============================================================
+  Назначение:
+    Главный HTML-шаблон. Советская эстетика поверх Bootstrap-сетки.
+    ...
+  ============================================================ #}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>МЕТЕОСВОДКА // {{ location_name }}</title>
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        crossorigin="anonymous">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<!-- =========================================================
+     РАЗДЕЛ 0. ДЕГРАДИРОВАННЫЙ РЕЖИМ (если данные устарели)
+     ========================================================= -->
+{% if is_degraded %}
+<div class="degraded-banner" role="alert">
+  ⚠ ДАННЫЕ УСТАРЕЛИ — последнее успешное обновление: {{ last_updated }}
+</div>
+{% endif %}
+
+<!-- =========================================================
+     РАЗДЕЛ 1. ШАПКА-ФОРМУЛЯР
+     ========================================================= -->
+<header class="formulyar">
+  <div class="container-fluid">
+    <div class="row align-items-start">
+      <div class="col-md-8">
+        <div class="formulyar__stamp">УТВ.</div>
+        <h1 class="formulyar__title">МЕТЕОСВОДКА</h1>
+        <div class="formulyar__subtitle">Прогноз погоды · Open-Meteo API · CC BY 4.0</div>
+      </div>
+      <div class="col-md-4 text-md-end">
+        <table class="formulyar__meta-table">
+          <tr>
+            <td class="formulyar__meta-key">ОБЪЕКТ:</td>
+            <td class="formulyar__meta-val" id="hdr-location">{{ location_name }}</td>
+          </tr>
+          <tr>
+            <td class="formulyar__meta-key">КООРД.:</td>
+            <td class="formulyar__meta-val">{{ "%.4f"|format(location_lat) }}° N,
+              {{ "%.4f"|format(location_lon) }}° E</td>
+          </tr>
+          <tr>
+            <td class="formulyar__meta-key">СГЕНЕР.:</td>
+            <td class="formulyar__meta-val">{{ generated_at[:19] | replace("T"," ") }} UTC</td>
+          </tr>
+          <tr>
+            <td class="formulyar__meta-key">ОБНОВЛ.:</td>
+            <td class="formulyar__meta-val">{{ last_updated[:19] | replace("T"," ") }} UTC</td>
+          </tr>
+          <tr>
+            <td class="formulyar__meta-key">РЕЖИМ:</td>
+            <td class="formulyar__meta-val {% if is_degraded %}text-danger{% endif %}">
+              {{ "ДЕГРАДИР." if is_degraded else "НОМИНАЛ" }}
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container-fluid py-3">
+
+<!-- =========================================================
+     РАЗДЕЛ 2. ПОИСК ЛОКАЦИИ
+     ========================================================= -->
+<section class="wd-card mb-3" id="section-search">
+  <div class="wd-card__header">§ 2. ВЫБОР ОБЪЕКТА НАБЛЮДЕНИЯ</div>
+  <div class="wd-card__body">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-6">
+        <label class="wd-label" for="geo-input">Название населённого пункта:</label>
+        <div class="input-group">
+          <input type="text" id="geo-input" class="form-control wd-input"
+                 placeholder="Москва, Берлин, New York…"
+                 autocomplete="off">
+          <button class="btn wd-btn-primary" id="geo-search-btn" type="button">
+            ПОИСК
+          </button>
+        </div>
+        <div id="geo-results" class="geo-dropdown" style="display:none"></div>
+      </div>
+      <div class="col-md-6">
+        <div class="wd-label">Избранное:</div>
+        <div id="favorites-list" class="favorites-list"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     РАЗДЕЛ 3. ТЕКУЩЕЕ СОСТОЯНИЕ
+     ========================================================= -->
+<section class="wd-card mb-3" id="section-current">
+  <div class="wd-card__header">§ 3. ТЕКУЩЕЕ СОСТОЯНИЕ <span class="wd-badge">{{ current.time[:10] }}</span></div>
+  <div class="wd-card__body">
+    {% if alerts %}
+    <div class="alerts-block mb-3">
+      {% for a in alerts %}
+      <div class="alert-item alert-item--{{ a.new_regime }}">
+        ⚡ {{ a.description }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row g-3">
+      <div class="col-6 col-md-3">
+        <div class="meteo-cell">
+          <div class="meteo-cell__label">ТЕМПЕРАТУРА</div>
+          <div class="meteo-cell__value" id="cur-temp">{{ "%.1f"|format(current.temperature) }}°C</div>
+          <div class="meteo-cell__sub">ощущается {{ "%.1f"|format(current.apparent_temperature) }}°C</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="meteo-cell">
+          <div class="meteo-cell__label">ВЛАЖНОСТЬ</div>
+          <div class="meteo-cell__value" id="cur-hum">{{ "%.0f"|format(current.humidity) }}%</div>
+          <div class="meteo-cell__sub">точка росы {{ "%.1f"|format(current.dew_point) }}°C</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="meteo-cell">
+          <div class="meteo-cell__label">ВЕТЕР</div>
+          <div class="meteo-cell__value" id="cur-wind">{{ "%.1f"|format(current.wind_speed) }} м/с</div>
+          <div class="meteo-cell__sub">порывы {{ "%.1f"|format(current.wind_gusts) }} м/с</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="meteo-cell">
+          <div class="meteo-cell__label">ОСАДКИ</div>
+          <div class="meteo-cell__value" id="cur-precip">{{ "%.0f"|format(current.precip_prob) }}%</div>
+          <div class="meteo-cell__sub">{{ "%.1f"|format(current.precipitation) }} мм</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Штампы статуса -->
+    <div class="status-stamps mt-3">
+      <span class="stamp {% if current.wind_gusts >= 15 %}stamp--alert{% else %}stamp--ok{% endif %}">
+        ВЕТЕР
+      </span>
+      <span class="stamp {% if current.precip_prob >= 50 %}stamp--alert{% else %}stamp--ok{% endif %}">
+        ОСАДКИ
+      </span>
+      <span class="stamp {% if comfort.value >= 70 %}stamp--ok{% elif comfort.value >= 40 %}stamp--warn{% else %}stamp--alert{% endif %}">
+        {{ comfort.category.value | upper }}
+      </span>
+      {% if is_degraded %}
+      <span class="stamp stamp--degraded">ДЕГРАДИР.</span>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     РАЗДЕЛ 4. ГРАФИКИ
+     ========================================================= -->
+<section class="wd-card mb-3" id="section-charts">
+  <div class="wd-card__header">§ 4. ГРАФИКИ ПРОГНОЗА (48 ЧАСОВ)</div>
+  <div class="wd-card__body">
+    <div class="row g-3">
+      <div class="col-12 col-lg-6">
+        <div class="chart-wrap">
+          <div class="chart-wrap__title">ТЕМПЕРАТУРА (°C)</div>
+          <canvas id="chart-temp" height="120"></canvas>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="chart-wrap">
+          <div class="chart-wrap__title">ОСАДКИ / ВЕРОЯТНОСТЬ (%)</div>
+          <canvas id="chart-precip" height="120"></canvas>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="chart-wrap">
+          <div class="chart-wrap__title">ВЕТЕР / ПОРЫВЫ (М/С)</div>
+          <canvas id="chart-wind" height="120"></canvas>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="chart-wrap">
+          <div class="chart-wrap__title">ВЛАЖНОСТЬ (%)</div>
+          <canvas id="chart-hum" height="120"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     РАЗДЕЛ 5. ПОЧАСОВАЯ ТАБЛИЦА
+     ========================================================= -->
+<section class="wd-card mb-3" id="section-hourly">
+  <div class="wd-card__header">§ 5. ПОЧАСОВОЙ ПРОГНОЗ (24 ЧАСА)</div>
+  <div class="wd-card__body table-responsive">
+    <table class="wd-table">
+      <thead>
+        <tr>
+          <th>ВРЕМЯ</th>
+          <th>t°C</th>
+          <th>ОЩУщ.</th>
+          <th>ВЛЖ.%</th>
+          <th>ОС.%</th>
+          <th>ВЕТЕР</th>
+          <th>ПОРЫВЫ</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in hourly_table %}
+        <tr class="{% if row.precip_prob|int >= 50 %}tr--rain{% endif %}">
+          <td>{{ row.time }}</td>
+          <td>{{ row.temp }}</td>
+          <td>{{ row.feels }}</td>
+          <td>{{ row.humidity }}</td>
+          <td>
+            <span class="prob-badge prob-badge--{{ 'high' if row.precip_prob|int >= 70 else ('mid' if row.precip_prob|int >= 40 else 'low') }}">
+              {{ row.precip_prob }}%
+            </span>
+          </td>
+          <td>{{ row.wind }}&nbsp;м/с</td>
+          <td>{{ row.gusts }}&nbsp;м/с</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- =========================================================
+     РАЗДЕЛ 6. СУТОЧНАЯ ТАБЛИЦА
+     ========================================================= -->
+<section class="wd-card mb-3" id="section-daily">
+  <div class="wd-card__header">§ 6. СУТОЧНЫЙ ПРОГНОЗ (7 ДНЕЙ)</div>
+  <div class="wd-card__body table-responsive">
+    <table class="wd-table">
+      <thead>
+        <tr>
+          <th>ДАТА</th>
+          <th>MAX°C</th>
+          <th>MIN°C</th>
+          <th>СРЕДН.</th>
+          <th>АМПЛИТ.</th>
+          <th>ОСАДКИ</th>
+          <th>ОС.%</th>
+          <th>ВЕТЕР</th>
+          <th>РАДИАЦИЯ</th>
+          <th>ВОСХОД</th>
+          <th>ЗАКАТ</th>
+          <th>ЧЧ≥50%</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in daily_table %}
+        <tr>
+          <td class="fw-bold">{{ row.date }}</td>
+          <td class="text-danger">{{ row.t_max }}</td>
+          <td class="text-primary">{{ row.t_min }}</td>
+          <td>{{ row.t_mean }}</td>
+          <td>{{ row.t_amp }}</td>
+          <td>{{ row.precip_sum }}&nbsp;мм</td>
+          <td>
+            <span class="prob-badge prob-badge--{{ 'high' if row.precip_prob|int >= 70 else ('mid' if row.precip_prob|int >= 40 else 'low') }}">
+              {{ row.precip_prob }}%
+            </span>
+          </td>
+          <td>{{ row.wind_gust }}&nbsp;м/с</td>
+          <td>{{ row.solar }}&nbsp;МДж/м²</td>
+          <td>{{ row.sunrise[11:16] if row.sunrise|length > 10 else row.sunrise }}</td>
+          <td>{{ row.sunset[11:16] if row.sunset|length > 10 else row.sunset }}</td>
+          <td>{{ row.rain_h50 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- =========================================================
+     РАЗДЕЛ 7. РАСЧЁТНЫЙ ОТДЕЛ
+     ========================================================= -->
+<section class="wd-card mb-3" id="section-calc">
+  <div class="wd-card__header">§ 7. РАСЧЁТНЫЙ ОТДЕЛ <span class="wd-badge">СОГЛ.</span></div>
+  <div class="wd-card__body">
+    <div class="row g-3">
+
+      <!-- ComfortIndex -->
+      <div class="col-12 col-md-4">
+        <div class="calc-block">
+          <div class="calc-block__title">ИНДЕКС КОМФОРТНОСТИ</div>
+          <div class="calc-block__value ci-value ci-value--{{ comfort.category.value }}">
+            {{ comfort.value }}
+          </div>
+          <div class="calc-block__category ci-category">{{ comfort.category.value | upper }}</div>
+          <table class="calc-detail-table mt-2">
+            <tr><td>Штраф t°:</td><td>−{{ comfort.t_penalty }}</td></tr>
+            <tr><td>Штраф влж.:</td><td>−{{ comfort.h_penalty }}</td></tr>
+            <tr><td>Штраф ветер:</td><td>−{{ comfort.w_penalty }}</td></tr>
+            <tr><td>Штраф ос.:</td><td>−{{ comfort.p_penalty }}</td></tr>
+            <tr><td>Часов:</td><td>{{ comfort.hours_used }}</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- Walk Window -->
+      <div class="col-12 col-md-4">
+        <div class="calc-block">
+          <div class="calc-block__title">ОКНО ПРОГУЛКИ</div>
+          {% if walk_window %}
+          <div class="calc-block__value">{{ walk_window.duration_hours }}ч</div>
+          <div class="walk-detail">
+            <div>Начало: <strong>{{ walk_window.start.isoformat()[:16] | replace("T"," ") }}</strong></div>
+            <div>Конец: <strong>{{ walk_window.end.isoformat()[:16] | replace("T"," ") }}</strong></div>
+            <div class="walk-reason mt-1">{{ walk_window.reason }}</div>
+          </div>
+          {% else %}
+          <div class="calc-block__value text-muted">—</div>
+          <div class="text-muted small">Подходящего окна не найдено в горизонте {{ 48 }}ч</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Alerts summary -->
+      <div class="col-12 col-md-4">
+        <div class="calc-block">
+          <div class="calc-block__title">ПОРОГОВЫЕ СОБЫТИЯ</div>
+          {% if alerts %}
+          {% for a in alerts %}
+          <div class="threshold-row threshold-row--{{ a.new_regime }}">
+            <span class="threshold-metric">{{ a.metric }}</span>
+            <span class="threshold-val">{{ a.value }}</span>
+            <span class="threshold-limit">/ {{ a.limit }}</span>
+            <span class="threshold-regime">{{ a.new_regime | upper }}</span>
+          </div>
+          {% endfor %}
+          {% else %}
+          <div class="text-success">✓ Нарушений порогов не обнаружено</div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Суточные метрики таблица -->
+    <div class="mt-3">
+      <div class="wd-subsection-title">СУТОЧНЫЕ МЕТРИКИ</div>
+      <div class="table-responsive">
+        <table class="wd-table wd-table--compact">
+          <thead>
+            <tr>
+              <th>ДАТА</th>
+              <th>ТСР°C</th>
+              <th>АМПЛИТ.</th>
+              <th>ЧЧ≥50%</th>
+              <th>ПОРЫВЫ макс.</th>
+              <th>РАДИАЦИЯ</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in daily_metrics %}
+            <tr>
+              <td>{{ m.date }}</td>
+              <td>{{ "%.1f"|format(m.t_mean_day) }}</td>
+              <td>{{ "%.1f"|format(m.t_amp_day) }}</td>
+              <td>{{ m.rain_hours_50 }}</td>
+              <td>{{ "%.1f"|format(m.wind_gust_max) }}&nbsp;м/с</td>
+              <td>{{ "%.1f"|format(m.solar_sum) }}&nbsp;МДж/м²</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =========================================================
+     РАЗДЕЛ 8. ЭКСПОРТ ДАННЫХ
+     ========================================================= -->
+<section class="wd-card mb-3" id="section-export">
+  <div class="wd-card__header">§ 8. ЭКСПОРТ ДАННЫХ</div>
+  <div class="wd-card__body">
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="data/latest.json" class="btn wd-btn-secondary" download>
+        ↓ latest.json
+      </a>
+      <a href="data/metrics.json" class="btn wd-btn-secondary" download>
+        ↓ metrics.json
+      </a>
+      <a href="data/hourly.csv" class="btn wd-btn-secondary" download>
+        ↓ hourly.csv
+      </a>
+      <a href="data/daily.csv" class="btn wd-btn-secondary" download>
+        ↓ daily.csv
+      </a>
+      <button id="btn-refresh" class="btn wd-btn-primary" type="button">
+        ↻ Обновить из API
+      </button>
+      <button onclick="window.print()" class="btn wd-btn-secondary" type="button">
+        ⎙ Печать отчёта
+      </button>
+    </div>
+    <div id="refresh-status" class="mt-2 small text-muted"></div>
+  </div>
+</section>
+
+<!-- =========================================================
+     РАЗДЕЛ 9. АТРИБУЦИЯ
+     ========================================================= -->
+<footer class="wd-footer">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-8">
+        <strong>Источник данных:</strong>
+        <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>
+        — лицензия <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.
+        Данные о местоположении основаны на
+        <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a>.
+      </div>
+      <div class="col-md-4 text-md-end">
+        <span class="wd-footer__mode">
+          Следующее обновление: по расписанию (4×/сутки)
+        </span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</main><!-- /main -->
+
+<!-- Данные для графиков (JSON inline) -->
+<script id="data-hourly48" type="application/json">
+{{ hourly_48 | tojson }}
+</script>
+
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+  crossorigin="anonymous"></script>
+<script
+  src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"
+  crossorigin="anonymous"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

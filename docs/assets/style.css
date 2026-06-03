@@ -1,0 +1,535 @@
+/* =============================================================
+ * ПУТЬ        : docs/assets/style.css
+ * ОБОЗНАЧЕНИЕ : WD.UI.01
+ * НАИМЕНОВАНИЕ: Стили дашборда — советская эстетика поверх Bootstrap
+ * ДОКУМЕНТ    : КС-СТО-1.04.СК
+ * ПРОГРАММА   : Weather Dashboard
+ * ЗАВИСИМОСТИ : Bootstrap 5 CDN
+ * =============================================================
+ * Назначение:
+ *   Визуальный стиль "табло / формуляр / ведомость":
+ *   светлая бумага, чёрный текст, красные акценты.
+ *   Адаптив: десктоп / планшет / мобильный.
+ *   Print-режим: печатаемый "отчёт смены".
+ * ============================================================= */
+
+/* -------------------------------------------------------------
+ * Раздел 0. Дизайн-токены
+ * ------------------------------------------------------------- */
+
+:root {
+  --c-red:      #b71c1c;
+  --c-red-lt:   #ef9a9a;
+  --c-paper:    #fafaf7;
+  --c-paper-dk: #f0efe8;
+  --c-ink:      #1a1a1a;
+  --c-ink-lt:   #444444;
+  --c-border:   #999;
+  --c-border-lt:#ccc;
+  --c-ok:       #1b5e20;
+  --c-warn:     #e65100;
+  --c-alert:    #b71c1c;
+  --c-deg:      #6a1a8a;
+
+  --font-mono: "Courier New", Courier, monospace;
+  --font-sans: "Arial", "Helvetica Neue", sans-serif;
+
+  --sp: 8px;
+  --radius: 2px;
+}
+
+/* -------------------------------------------------------------
+ * Раздел 1. Базовые стили
+ * ------------------------------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: var(--font-mono);
+  background: var(--c-paper-dk);
+  color: var(--c-ink);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+a { color: var(--c-red); }
+a:hover { color: var(--c-ink); }
+
+/* -------------------------------------------------------------
+ * Раздел 2. Шапка-формуляр
+ * ------------------------------------------------------------- */
+
+.formulyar {
+  background: var(--c-paper);
+  border-bottom: 3px double var(--c-ink);
+  padding: calc(var(--sp) * 2) 0;
+  position: relative;
+}
+
+.formulyar__stamp {
+  display: inline-block;
+  border: 2px solid var(--c-red);
+  color: var(--c-red);
+  font-weight: bold;
+  font-size: 11px;
+  padding: 1px 6px;
+  letter-spacing: 2px;
+  transform: rotate(-4deg);
+  margin-bottom: var(--sp);
+}
+
+.formulyar__title {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  margin: 0 0 4px;
+  border-bottom: 1px solid var(--c-border);
+  padding-bottom: 4px;
+}
+
+.formulyar__subtitle {
+  font-size: 11px;
+  color: var(--c-ink-lt);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.formulyar__meta-table {
+  font-size: 12px;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.formulyar__meta-key {
+  color: var(--c-ink-lt);
+  padding-right: var(--sp);
+  white-space: nowrap;
+  text-align: right;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.formulyar__meta-val {
+  font-weight: bold;
+  border-bottom: 1px dotted var(--c-border-lt);
+  padding-bottom: 1px;
+}
+
+/* -------------------------------------------------------------
+ * Раздел 3. Карточки-блоки
+ * ------------------------------------------------------------- */
+
+.wd-card {
+  background: var(--c-paper);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.wd-card__header {
+  background: var(--c-ink);
+  color: var(--c-paper);
+  font-weight: bold;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: calc(var(--sp) * 0.75) calc(var(--sp) * 2);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: var(--sp);
+}
+
+.wd-card__body {
+  padding: calc(var(--sp) * 2);
+}
+
+.wd-badge {
+  background: var(--c-red);
+  color: white;
+  font-size: 9px;
+  padding: 1px 5px;
+  letter-spacing: 1px;
+  border-radius: 1px;
+}
+
+.wd-subsection-title {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--c-ink-lt);
+  border-bottom: 1px solid var(--c-border-lt);
+  padding-bottom: 4px;
+  margin-bottom: var(--sp);
+}
+
+/* -------------------------------------------------------------
+ * Раздел 4. Метео-ячейки (текущее состояние)
+ * ------------------------------------------------------------- */
+
+.meteo-cell {
+  border: 1px solid var(--c-border);
+  background: var(--c-paper-dk);
+  padding: calc(var(--sp) * 1.5);
+  text-align: center;
+}
+
+.meteo-cell__label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--c-ink-lt);
+  margin-bottom: 4px;
+}
+
+.meteo-cell__value {
+  font-size: 26px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  line-height: 1.1;
+}
+
+.meteo-cell__sub {
+  font-size: 11px;
+  color: var(--c-ink-lt);
+  margin-top: 2px;
+}
+
+/* -------------------------------------------------------------
+ * Раздел 5. Штампы статуса
+ * ------------------------------------------------------------- */
+
+.status-stamps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp);
+}
+
+.stamp {
+  display: inline-block;
+  border: 2px solid currentColor;
+  padding: 2px 10px;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  border-radius: 1px;
+}
+
+.stamp--ok       { color: var(--c-ok); }
+.stamp--warn     { color: var(--c-warn); }
+.stamp--alert    { color: var(--c-alert); border-color: var(--c-alert); background: #fff0f0; }
+.stamp--degraded { color: var(--c-deg); border-color: var(--c-deg); }
+
+/* -------------------------------------------------------------
+ * Раздел 6. Таблицы
+ * ------------------------------------------------------------- */
+
+.wd-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.wd-table th {
+  background: var(--c-ink);
+  color: var(--c-paper);
+  text-align: center;
+  padding: 4px 6px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+}
+
+.wd-table td {
+  border-bottom: 1px solid var(--c-border-lt);
+  padding: 3px 6px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.wd-table tr:hover td { background: #f0efe8; }
+.wd-table--compact td { padding: 2px 5px; }
+
+.tr--rain td { background: #e8f4fd; }
+
+/* Бейджи вероятности осадков */
+.prob-badge {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.prob-badge--low  { background: #e8f5e9; color: #1b5e20; }
+.prob-badge--mid  { background: #fff8e1; color: #e65100; }
+.prob-badge--high { background: #ffebee; color: #b71c1c; }
+
+/* -------------------------------------------------------------
+ * Раздел 7. Графики
+ * ------------------------------------------------------------- */
+
+.chart-wrap {
+  border: 1px solid var(--c-border-lt);
+  background: var(--c-paper);
+  padding: var(--sp);
+}
+
+.chart-wrap__title {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--c-ink-lt);
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--c-border-lt);
+  padding-bottom: 3px;
+}
+
+/* -------------------------------------------------------------
+ * Раздел 8. Расчётный отдел
+ * ------------------------------------------------------------- */
+
+.calc-block {
+  border: 1px solid var(--c-border);
+  background: var(--c-paper-dk);
+  padding: calc(var(--sp) * 1.5);
+  height: 100%;
+}
+
+.calc-block__title {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--c-ink-lt);
+  margin-bottom: var(--sp);
+  border-bottom: 1px solid var(--c-border-lt);
+  padding-bottom: 4px;
+}
+
+.calc-block__value {
+  font-size: 36px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.calc-block__category {
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* CI цвета */
+.ci-value--комфортно { color: var(--c-ok); }
+.ci-value--терпимо   { color: var(--c-warn); }
+.ci-value--тяжело    { color: var(--c-alert); }
+
+.ci-category { margin-bottom: var(--sp); }
+
+.calc-detail-table {
+  font-size: 11px;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.calc-detail-table td {
+  padding: 1px 4px;
+  border-bottom: 1px dotted var(--c-border-lt);
+}
+
+.calc-detail-table td:last-child {
+  text-align: right;
+  font-weight: bold;
+}
+
+/* Walk window */
+.walk-detail { font-size: 12px; }
+.walk-reason { font-size: 10px; color: var(--c-ink-lt); font-style: italic; }
+
+/* Пороговые строки */
+.threshold-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 11px;
+  padding: 2px 0;
+  border-bottom: 1px dotted var(--c-border-lt);
+}
+
+.threshold-row--alert   { color: var(--c-alert); }
+.threshold-row--warning { color: var(--c-warn); }
+
+.threshold-metric { flex: 1; }
+.threshold-val    { font-weight: bold; }
+.threshold-limit  { color: var(--c-ink-lt); }
+.threshold-regime {
+  font-size: 9px;
+  letter-spacing: 1px;
+  border: 1px solid currentColor;
+  padding: 0 3px;
+}
+
+/* -------------------------------------------------------------
+ * Раздел 9. Предупреждения и деградация
+ * ------------------------------------------------------------- */
+
+.degraded-banner {
+  background: var(--c-deg);
+  color: white;
+  text-align: center;
+  padding: 6px var(--sp);
+  font-weight: bold;
+  letter-spacing: 2px;
+  font-size: 12px;
+}
+
+.alerts-block { display: flex; flex-direction: column; gap: 4px; }
+
+.alert-item {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  border-left: 4px solid;
+}
+
+.alert-item--alert   { border-color: var(--c-alert); background: #fff0f0; color: var(--c-alert); }
+.alert-item--warning { border-color: var(--c-warn);  background: #fff8e1; color: var(--c-warn); }
+
+/* -------------------------------------------------------------
+ * Раздел 10. Поиск и избранное
+ * ------------------------------------------------------------- */
+
+.wd-label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
+.wd-input { font-family: var(--font-mono); font-size: 13px; border-radius: var(--radius); }
+
+.wd-btn-primary {
+  background: var(--c-ink);
+  color: var(--c-paper);
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1px;
+  border-radius: var(--radius);
+  padding: 6px 16px;
+}
+
+.wd-btn-primary:hover { background: var(--c-red); color: white; }
+
+.wd-btn-secondary {
+  background: transparent;
+  color: var(--c-ink);
+  border: 1px solid var(--c-border);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1px;
+  border-radius: var(--radius);
+  padding: 5px 14px;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.wd-btn-secondary:hover { background: var(--c-ink); color: var(--c-paper); }
+
+.geo-dropdown {
+  position: absolute;
+  z-index: 1000;
+  background: var(--c-paper);
+  border: 1px solid var(--c-border);
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.geo-item {
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  border-bottom: 1px solid var(--c-border-lt);
+}
+
+.geo-item:hover { background: var(--c-paper-dk); }
+
+.favorites-list { display: flex; flex-wrap: wrap; gap: 4px; }
+
+.fav-btn {
+  background: var(--c-paper-dk);
+  border: 1px solid var(--c-border);
+  padding: 3px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  border-radius: var(--radius);
+}
+
+.fav-btn:hover { background: var(--c-ink); color: var(--c-paper); }
+
+/* -------------------------------------------------------------
+ * Раздел 11. Футер
+ * ------------------------------------------------------------- */
+
+.wd-footer {
+  background: var(--c-paper-dk);
+  border-top: 2px solid var(--c-ink);
+  padding: calc(var(--sp) * 1.5) 0;
+  font-size: 11px;
+  color: var(--c-ink-lt);
+  margin-top: calc(var(--sp) * 2);
+}
+
+.wd-footer a { color: var(--c-red); }
+.wd-footer__mode { font-size: 10px; letter-spacing: 1px; }
+
+/* -------------------------------------------------------------
+ * Раздел 12. Адаптивность
+ * ------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .formulyar__title { font-size: 18px; letter-spacing: 3px; }
+  .meteo-cell__value { font-size: 20px; }
+  .calc-block__value { font-size: 28px; }
+  .wd-card__body { padding: var(--sp); }
+}
+
+@media (max-width: 480px) {
+  .formulyar__title { font-size: 15px; letter-spacing: 2px; }
+  .wd-table { font-size: 11px; }
+  .wd-table td, .wd-table th { padding: 2px 3px; }
+}
+
+/* -------------------------------------------------------------
+ * Раздел 13. Print-режим (@media print)
+ * ------------------------------------------------------------- */
+
+@media print {
+  body { background: white; font-size: 10pt; }
+
+  .formulyar {
+    border-bottom: 2pt solid black;
+    page-break-after: avoid;
+  }
+
+  .wd-card { border: 1pt solid black; page-break-inside: avoid; }
+  .wd-card__header { background: black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  #section-search,
+  #section-export,
+  #btn-refresh,
+  .geo-dropdown,
+  .wd-btn-primary,
+  .wd-btn-secondary { display: none !important; }
+
+  .chart-wrap { page-break-inside: avoid; }
+
+  .wd-footer {
+    border-top: 1pt solid black;
+    page-break-before: always;
+  }
+
+  .degraded-banner { background: black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

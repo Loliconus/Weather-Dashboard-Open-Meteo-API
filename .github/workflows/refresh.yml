@@ -1,0 +1,40 @@
+# =============================================================
+# ПУТЬ        : .github/workflows/refresh.yml
+# ОБОЗНАЧЕНИЕ : WD.CICD.03
+# НАИМЕНОВАНИЕ: Плановое обновление данных (schedule)
+# ДОКУМЕНТ    : КС-СТО-1.04.СК
+# ПРОГРАММА   : Weather Dashboard
+# ЗАВИСИМОСТИ : pages.yml
+# =============================================================
+# Назначение:
+#   Запускает pages.yml по расписанию 4 раза в сутки.
+#   ТЗ раздел 10.3: обязательное плановое обновление.
+# =============================================================
+
+name: Refresh Data
+
+on:
+  schedule:
+    # 04:00, 10:00, 16:00, 22:00 UTC
+    - cron: "0 4,10,16,22 * * *"
+  workflow_dispatch:
+
+jobs:
+  trigger-pages:
+    name: Запустить pages.yml
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+
+    steps:
+      - name: Запустить workflow pages.yml
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              workflow_id: "pages.yml",
+              ref: "main",
+            });
