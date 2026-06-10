@@ -471,8 +471,8 @@ class AirQualityResponse:
     """
 
     metadata: ForecastMetadata
-    time: list[str]                          # ← отдельное типизированное поле
-    hourly: dict[str, list[float | None]]    # ← теперь только float|None
+    time: list[str]  # ← отдельное типизированное поле
+    hourly: dict[str, list[float | None]]  # ← теперь только float|None
     units: dict[str, str]
 
     @classmethod
@@ -490,13 +490,13 @@ class AirQualityResponse:
         parsed: dict[str, list[float | None]] = {
             key: [float(v) if v is not None else None for v in values]
             for key, values in raw_hourly.items()
-            if key != "time"               # time обрабатывается отдельно
+            if key != "time"  # time обрабатывается отдельно
         }
 
         return cls(
             metadata=ForecastMetadata.from_dict(data),
             time=[str(t) for t in raw_hourly.get("time", [])],  # list[str] ✓
-            hourly=parsed,                                        # list[float|None] ✓
+            hourly=parsed,  # list[float|None] ✓
             units=dict(data.get("hourly_units", {})),
         )
 

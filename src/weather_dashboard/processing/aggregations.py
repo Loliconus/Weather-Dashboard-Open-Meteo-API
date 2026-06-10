@@ -198,9 +198,7 @@ def dominant_wind_direction(hourly: HourlyForecast) -> dict[str, float]:
     for date, indices in _day_slices(hourly):
         # Walrus-оператор: d привязывается в условии → ty сужает до float ✓
         dirs: list[float] = [
-            d
-            for i in indices
-            if (d := hourly.wind_direction_10m[i]) is not None
+            d for i in indices if (d := hourly.wind_direction_10m[i]) is not None
         ]
 
         if not dirs:
@@ -208,8 +206,8 @@ def dominant_wind_direction(hourly: HourlyForecast) -> dict[str, float]:
             continue
 
         n = float(len(dirs))
-        sin_sum = sum(math.sin(math.radians(d)) for d in dirs)   # d: float ✓
-        cos_sum = sum(math.cos(math.radians(d)) for d in dirs)   # d: float ✓
+        sin_sum = sum(math.sin(math.radians(d)) for d in dirs)  # d: float ✓
+        cos_sum = sum(math.cos(math.radians(d)) for d in dirs)  # d: float ✓
 
         mean_dir = math.degrees(math.atan2(sin_sum / n, cos_sum / n))
         result[date] = float(mean_dir % 360.0)
@@ -272,7 +270,7 @@ def sunshine_hours(hourly: HourlyForecast) -> dict[str, float]:
             1
             for i in indices
             if (rad := hourly.shortwave_radiation[i]) is not None
-            and rad > _THRESHOLD   # rad: float ✓, оператор > валиден
+            and rad > _THRESHOLD  # rad: float ✓, оператор > валиден
         )
         result[date] = float(count)
 
