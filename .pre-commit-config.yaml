@@ -1,0 +1,47 @@
+# .pre-commit-config.yaml
+# Порядок выполнения критичен — см. ТЗ §9
+repos:
+  # ── 1. Базовые хуки ────────────────────────────────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: ["--allow-multiple-documents"]
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: debug-statements
+      - id: check-case-conflict
+
+  # ── 2. Ruff: автофикс линт-ошибок ──────────────────────────────────────
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.10
+    hooks:
+      - id: ruff
+        args: ["--fix", "--exit-non-zero-on-fix"]
+        types_or: [python, pyi]
+
+  # ── 3. Ruff: автоформатирование ─────────────────────────────────────────
+      - id: ruff-format
+        types_or: [python, pyi]
+
+  # ── 4. ty: проверка типов ───────────────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: ty-check
+        name: ty check
+        language: system
+        entry: ty check src/
+        types: [python]
+        pass_filenames: false
+
+  # ── 5. pytest: только быстрые юнит-тесты (<10 сек) ─────────────────────
+      - id: pytest-unit
+        name: pytest unit tests
+        language: system
+        entry: pytest tests/unit/ -q --no-header --tb=short
+        types: [python]
+        pass_filenames: false

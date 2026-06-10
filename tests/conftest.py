@@ -1,147 +1,193 @@
-# =============================================================
-# ПУТЬ        : tests/conftest.py
-# ОБОЗНАЧЕНИЕ : WD.TEST.00
-# НАИМЕНОВАНИЕ: Фикстуры pytest — общие для всех тестов
-# ДОКУМЕНТ    : КС-СТО-1.04.СК
-# ПРОГРАММА   : Weather Dashboard
-# ЗАВИСИМОСТИ : pytest, logging, os
-# =============================================================
-# Назначение:
-#   reset_logging (autouse) — сбрасывает handlers И уровни логгеров
-#   после каждого теста, включая именованный логгер "ledger".
-#   capturing_handler — подключает handler И выставляет уровень DEBUG
-#   на логгере "ledger", чтобы INFO-сообщения не фильтровались.
-#   clean_env — удаляет RST_* переменные среды.
-#   Проверка: pytest tests/ (фикстуры применяются автоматически)
-# =============================================================
+"""Общие фикстуры pytest для всех тестов."""
 
 from __future__ import annotations
 
-import logging
-import os
-from collections.abc import Generator
-from typing import Any
-
 import pytest
 
-# -------------------------------------------------------------
-# Раздел 0. Константы
-# -------------------------------------------------------------
-
-_RST_ENV_VARS: tuple[str, ...] = ("RST_ENV", "RST_LOG_LEVEL", "RST_LOG_FORMAT")
-
-
-# -------------------------------------------------------------
-# Раздел 1. Управление логированием
-# -------------------------------------------------------------
+from weather_dashboard.api.models import (
+    AirQualityResponse,
+    CurrentWeather,
+    DailyForecast,
+    ForecastMetadata,
+    ForecastResponse,
+    HourlyForecast,
+)
 
 
-@pytest.fixture(autouse=True)
-def reset_logging() -> Generator[None, None, None]:
-    """Сбросить состояние логгеров после каждого теста.
+# ---------------------------------------------------------------------------
+# Фабрики сырых dict-ответов API (для respx-моков)
+# ---------------------------------------------------------------------------
 
-    Autouse=True — применяется ко всем тестам автоматически.
+def make_forecast_dict(
+    lat: float = 55.7558,
+    lon: float = 37.6173,
+    timezone: str = "Europe/Moscow",
+    n_hours: int = 48,
+    n_days: int = 7,
+) -> dict:
+    """Строит минимально корректный dict-ответ /v1/forecast."""
+    # БЫЛО:   h % 24  → все timestamps = 2026-06-10T*  (один день!)
+    # СТАЛО:  правильная дата = 10 + h//24
+    hours = [f"2026-06-{10 + h // 24:02d}T{h % 24:02d}:00" for h in range(n_hours)]
+    days  = [f"2026-06-{10 + i:02d}" for i in range(n_days)]
 
-    Сбрасывает:
-    - root logger: handlers + уровень → WARNING
-    - именованный логгер "ledger": handlers + уровень → NOTSET
-      (NOTSET означает "наследовать от root", не фиксировать свой уровень)
+    return {
+        "latitude":           lat,
+        "longitude":          lon,
+        "timezone":           timezone,
+        "utc_offset_seconds": 10800,
+        "generationtime_ms":  1.23,
+        "current_units":      {"temperature_2m": "°C"},
+        "hourly_units": {
+            "temperature_2m":              "°C",
+            "apparent_temperature":        "°C",
+            "precipitation":               "mm",
+            "rain":                        "mm",
+            "snowfall":                    "cm",
+            "precipitation_probability":   "%",
+            "wind_speed_10m":              "m/s",
+            "wind_direction_10m":          "°",
+            "wind_gusts_10m":              "m/s",
+            "relative_humidity_2m":        "%",
+            "dew_point_2m":                "°C",
+            "surface_pressure":            "hPa",
+            "shortwave_radiation":         "W/m²",
+            "uv_index":                    "",
+            "cloud_cover":                 "%",
+            "visibility":                  "m",
+        },
+        "daily_units": {
+            "temperature_2m_max":  "°C",
+            "temperature_2m_min":  "°C",
+            "precipitation_sum":   "mm",
+            "wind_speed_10m_max":  "m/s",
+            "uv_index_max":        "",
+            "sunrise":             "iso8601",
+            "sunset":              "iso8601",
+        },
+        "current": {
+            "time":                   "2026-06-10T12:00",
+            "temperature_2m":         22.5,
+            "apparent_temperature":   21.0,
+            "wind_speed_10m":         4.5,
+            "relative_humidity_2m":   55.0,
+            "precipitation":          0.0,
+            "weather_code":           1,
+        },
+        "hourly": {
+            "time":                      hours,
+            "temperature_2m":            [20.0 + i * 0.1 for i in range(n_hours)],
+            "apparent_temperature":      [19.0 + i * 0.1 for i in range(n_hours)],
+            "precipitation":             [0.0] * n_hours,
+            "rain":                      [0.0] * n_hours,
+            "snowfall":                  [0.0] * n_hours,
+            "precipitation_probability": [0]   * n_hours,
+            "wind_speed_10m":            [4.0] * n_hours,
+            "wind_direction_10m":        [180.0] * n_hours,
+            "wind_gusts_10m":            [6.0] * n_hours,
+            "relative_humidity_2m":      [55.0] * n_hours,
+            "dew_point_2m":              [11.0] * n_hours,
+            "surface_pressure":          [1013.0] * n_hours,
+            "shortwave_radiation":       [
+                200.0 if 6 <= (i % 24) <= 20 else 0.0
+                for i in range(n_hours)
+            ],
+            "uv_index": [
+                3.0 if 6 <= (i % 24) <= 20 else 0.0
+                for i in range(n_hours)
+            ],
+            "cloud_cover":  [20.0]    * n_hours,
+            "visibility":   [10000.0] * n_hours,
+        },
+        "daily": {
+            "time":               days,
+            "temperature_2m_max": [25.0 + i for i in range(n_days)],
+            "temperature_2m_min": [15.0 + i for i in range(n_days)],
+            "precipitation_sum":  [0.0] * n_days,
+            "wind_speed_10m_max": [8.0] * n_days,
+            "uv_index_max":       [5.0] * n_days,
+            "sunrise": [f"2026-06-{10 + i:02d}T04:30" for i in range(n_days)],
+            "sunset":  [f"2026-06-{10 + i:02d}T21:30" for i in range(n_days)],
+        },
+    }
 
-    Без сброса уровня "ledger" тесты, которые вызывают capturing_handler
-    после предыдущего теста, могут унаследовать повышенный уровень фильтрации
-    и не получить INFO-сообщения в records.
-    """
-    yield
 
-    # Сброс root logger
-    root = logging.getLogger()
-    root.handlers.clear()
-    root.setLevel(logging.WARNING)
-
-    # Сброс именованного ledger-логгера
-    # ВАЖНО: setLevel(NOTSET) снимает явный уровень — логгер наследует от root.
-    # Без этого уровень DEBUG, выставленный capturing_handler-фикстурой,
-    # "протекает" между тестами и создаёт ложные зависимости.
-    ledger_logger = logging.getLogger("ledger")
-    ledger_logger.handlers.clear()
-    ledger_logger.setLevel(logging.NOTSET)
-
-
-# -------------------------------------------------------------
-# Раздел 2. Среда выполнения
-# -------------------------------------------------------------
-
-
-@pytest.fixture()
-def clean_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Удалить RST_* переменные среды перед тестом.
-
-    Использовать в тестах, проверяющих дефолтные значения:
-
-        def test_defaults(clean_env: None) -> None:
-            s = load_settings()
-            assert s.env == "dev"
-    """
-    for var in _RST_ENV_VARS:
-        monkeypatch.delenv(var, raising=False)
+def make_aq_dict(
+    lat: float = 55.7558,
+    lon: float = 37.6173,
+    n_hours: int = 24,
+) -> dict:
+    """Строит минимально корректный dict-ответ /v1/air-quality."""
+    hours = [f"2026-06-10T{h:02d}:00" for h in range(n_hours)]
+    return {
+        "latitude":           lat,
+        "longitude":          lon,
+        "timezone":           "Europe/Moscow",
+        "utc_offset_seconds": 10800,
+        "generationtime_ms":  0.5,
+        "hourly_units": {
+            "pm10":              "μg/m³",
+            "pm2_5":             "μg/m³",
+            "carbon_monoxide":   "μg/m³",
+            "nitrogen_dioxide":  "μg/m³",
+            "ozone":             "μg/m³",
+            "european_aqi":      "",
+            "us_aqi":            "",
+        },
+        "hourly": {
+            "time":             hours,
+            "pm10":             [15.0]  * n_hours,
+            "pm2_5":            [8.0]   * n_hours,
+            "carbon_monoxide":  [200.0] * n_hours,
+            "nitrogen_dioxide": [12.0]  * n_hours,
+            "ozone":            [60.0]  * n_hours,
+            "european_aqi":     [22.0]  * n_hours,
+            "us_aqi":           [25.0]  * n_hours,
+        },
+    }
 
 
-# -------------------------------------------------------------
-# Раздел 3. Вспомогательные утилиты (доступны в тестах)
-# -------------------------------------------------------------
+def make_elevation_dict(elevation: float = 144.0) -> dict:
+    """Строит dict-ответ /v1/elevation."""
+    return {"elevation": [elevation]}
 
 
-class CapturingHandler(logging.Handler):
-    """Захватывающий handler для проверки ledger-записей в тестах.
+def make_geocoding_dict(name: str = "Москва") -> dict:
+    """Строит dict-ответ /v1/search."""
+    return {
+        "results": [
+            {
+                "id":           524901,
+                "name":         name,
+                "latitude":     55.7558,
+                "longitude":    37.6173,
+                "country_code": "RU",
+                "timezone":     "Europe/Moscow",
+                "elevation":    144.0,
+                "admin1":       "Москва",
+            }
+        ]
+    }
 
-    Использование:
-        handler = CapturingHandler()
-        logging.getLogger("ledger").addHandler(handler)
-        ledger.fact("service", "started")
-        record = handler.records[-1]
-    """
+# ---------------------------------------------------------------------------
+# pytest-фикстуры dataclass-моделей
+# ---------------------------------------------------------------------------
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.records: list[logging.LogRecord] = []
-
-    def emit(self, record: logging.LogRecord) -> None:
-        self.records.append(record)
-
-
-def extract_extra(record: logging.LogRecord) -> dict[str, Any]:
-    """Извлечь extra-поля из LogRecord (поля схемы ledger).
-
-    Фильтрует стандартные атрибуты LogRecord, возвращает только
-    поля, добавленные через extra= в logging.log().
-
-    Поля схемы (kind, subject, fact_id и т.д.) — в результате напрямую.
-    Пользовательский контекст — в result["ctx"].
-    """
-    skip = frozenset(
-        logging.LogRecord("", 0, "", 0, "", (), None).__dict__.keys()
-    )
-    return {k: v for k, v in record.__dict__.items() if k not in skip}
+@pytest.fixture
+def forecast_dict() -> dict:
+    return make_forecast_dict()
 
 
-@pytest.fixture()
-def capturing_handler() -> Generator[CapturingHandler, None, None]:
-    """Создать CapturingHandler, подключить к ledger-логгеру и выставить уровень.
+@pytest.fixture
+def forecast_response(forecast_dict) -> ForecastResponse:
+    return ForecastResponse.from_dict(forecast_dict)
 
-    КРИТИЧНО: выставляем setLevel(DEBUG) именно на логгере "ledger",
-    а не на root. Это нужно потому что:
-    - reset_logging (autouse) выставляет root на WARNING
-    - логгер "ledger" наследует уровень от root (NOTSET → WARNING)
-    - fact() и transition() пишут с level="INFO"
-    - INFO < WARNING → сообщения фильтруются ДО вызова emit()
-    - capturing_handler.records остаётся пустым → IndexError
 
-    setLevel(DEBUG) на именованном логгере снимает наследование
-    и разрешает все уровни ≥ DEBUG независимо от root.
-    """
-    handler = CapturingHandler()
-    ledger_logger = logging.getLogger("ledger")
-    ledger_logger.addHandler(handler)
-    ledger_logger.setLevel(logging.DEBUG)  # ← ключевой фикс
-    yield handler
-    # Очистка происходит в reset_logging (autouse)
+@pytest.fixture
+def hourly_forecast(forecast_response) -> HourlyForecast:
+    return forecast_response.hourly
+
+
+@pytest.fixture
+def aq_response() -> AirQualityResponse:
+    return AirQualityResponse.from_dict(make_aq_dict())

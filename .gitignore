@@ -1,62 +1,85 @@
-# =============================================================
-# ПУТЬ        : .gitignore
-# ОБОЗНАЧЕНИЕ : WD.CONF.05
-# НАИМЕНОВАНИЕ: Исключения Git
-# ДОКУМЕНТ    : КС-СТО-1.04.СК
-# ПРОГРАММА   : Weather Dashboard
-# =============================================================
-
-# -------------------------------------------------------------
-# Раздел 1. Python
-# -------------------------------------------------------------
+# Python
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
+*$py.class
+*.so
 .Python
-*.egg-info/
-dist/
 build/
+develop-eggs/
+dist/
+downloads/
+eggs/
 .eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
 *.egg
+MANIFEST
 
-# -------------------------------------------------------------
-# Раздел 2. Виртуальные окружения
-# -------------------------------------------------------------
-.venv/
-venv/
-env/
-.env.local
-.env.*.local
-
-# Переменные среды (не коммитить реальные секреты)
+# Virtual environments
 .env
-!.env.example
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
-# -------------------------------------------------------------
-# Раздел 3. Инструменты
-# -------------------------------------------------------------
-.ruff_cache/
-.mypy_cache/
+# uv
+.uv/
+
+# Cache (Python-сторона)
+.cache/
+
+# pytest / coverage
 .pytest_cache/
 .coverage
-coverage.xml
 htmlcov/
-.hypothesis/
+coverage.xml
+*.cover
 
-# -------------------------------------------------------------
-# Раздел 4. IDE
-# -------------------------------------------------------------
+# Type checkers
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ty_cache/
+
+# IDE
 .idea/
 .vscode/
+*.sw?
 *.swp
 *.swo
-*~
 .DS_Store
+Thumbs.db
 
-# -------------------------------------------------------------
-# Раздел 5. Проектные артефакты (не коммитятся — генерируются)
-# -------------------------------------------------------------
-# РЕШЕНИЕ: docs/data/*.json и *.csv генерируются Actions,
-# в репозитории хранятся только заглушки (fixtures).
-# docs/data/
+# Jinja2 compiled templates
+*.pyc
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# docs/ генерируется CI — не коммитим вручную,
+# НО сам каталог нужен для GitHub Pages
+# поэтому НЕ добавляем docs/ в .gitignore
+# data.js обновляется через CI
+docs/assets/data.js
+
+# Env-файлы
+.env
+.env.local
+.env.*.local

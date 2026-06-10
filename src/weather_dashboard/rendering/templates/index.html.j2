@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  {% include "components/meta.html.j2" %}
+  <title>Погода — {{ default_location.name }} | Weather Dashboard</title>
+  <meta name="description"
+        content="Прогноз погоды для {{ default_location.name }}: текущие условия, 7-дневный прогноз, качество воздуха, метеоиндексы.">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+{# ═══════════════════════════════════════════════════════════════════════════
+   HEADER / SEARCH
+════════════════════════════════════════════════════════════════════════════ #}
+<header class="header" role="banner">
+  <div class="header__inner">
+    <a href="index.html" class="header__logo" aria-label="На главную">
+      <span class="header__logo-icon" aria-hidden="true">🌤</span>
+      <span class="header__logo-text">Weather Dashboard</span>
+    </a>
+
+    {# Поиск города (Live mode) #}
+    <div class="search" role="search" aria-label="Поиск города">
+      <div class="search__wrapper">
+        <label for="city-search" class="sr-only">Поиск города</label>
+        <input
+          id="city-search"
+          class="search__input"
+          type="search"
+          placeholder="Введите город..."
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          minlength="2"
+          aria-autocomplete="list"
+          aria-controls="search-results"
+          aria-expanded="false"
+        >
+        <button
+          class="search__geo-btn"
+          id="geo-btn"
+          type="button"
+          title="Определить местоположение"
+          aria-label="Определить местоположение автоматически"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               width="20" height="20" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83
+                     M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+          </svg>
+        </button>
+      </div>
+      <ul
+        id="search-results"
+        class="search__dropdown"
+        role="listbox"
+        aria-label="Результаты поиска"
+        hidden
+      ></ul>
+    </div>
+
+    <nav class="header__nav" aria-label="Навигация">
+      <a href="index.html" class="header__nav-link header__nav-link--active"
+         aria-current="page">Погода</a>
+      <a href="about.html" class="header__nav-link">О проекте</a>
+    </nav>
+  </div>
+
+  {# Баннер устаревшего кеша (управляется JS) #}
+  <div id="stale-banner" class="stale-banner" hidden role="alert" aria-live="polite">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         width="16" height="16" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    Данные от <span id="stale-time"></span> — возможно устарели.
+    <button class="stale-banner__refresh" id="refresh-btn" type="button">
+      Обновить
+    </button>
+  </div>
+</header>
+
+{# ═══════════════════════════════════════════════════════════════════════════
+   MAIN
+════════════════════════════════════════════════════════════════════════════ #}
+<main id="main-content" class="main">
+
+{# ── СЕКЦИЯ 1: Текущая погода (Hero) ──────────────────────────────────── #}
+<section class="section section--hero" id="current-weather"
+         aria-labelledby="current-heading" data-observe>
+
+  {# Loading skeleton #}
+  <div class="skeleton-group" id="hero-skeleton" aria-hidden="true">
+    <div class="skeleton skeleton--title"></div>
+    <div class="skeleton skeleton--subtitle"></div>
+    <div class="skeleton skeleton--metrics"></div>
+  </div>
+
+  {# Контент (скрыт до загрузки) #}
+  <div class="hero" id="hero-content" hidden>
+    <div class="hero__location">
+      <h1 id="current-heading" class="hero__city">
+        {{ default_location.name }}
+      </h1>
+      <p class="hero__meta">
+        <span id="hero-country"></span>
+        <span class="hero__sep" aria-hidden="true">·</span>
+        <span class="hero__elevation">
+          {{ default_location.elevation | round(0) | int }} м н.у.м.
+        </span>
+        <span class="hero__sep" aria-hidden="true">·</span>
+        <span id="hero-time" class="hero__time"></span>
+      </p>
+    </div>
+
+    <div class="hero__weather">
+      <div class="hero__icon" id="hero-icon" aria-hidden="true">
+        {{ default_location.current.weather_svg | safe }}
+      </div>
+      <div class="hero__temps">
+        <span class="hero__temp" id="hero-temp">
+          {{ default_location.current.temperature | ru_number(1) }}°
+        </span>
+        <span class="hero__temp-label">°C</span>
+      </div>
+      <div class="hero__feels">
+        Ощущается как
+        <strong id="hero-feels">
+          {{ default_location.current.apparent_temperature | ru_number(1) }}°C
+        </strong>
+      </div>
+      <p class="hero__description" id="hero-desc">
+        {{ default_location.current.weather_description }}
+      </p>
+    </div>
+
+    {# Строка ключевых метрик #}
+    <dl class="metrics" aria-label="Ключевые метрики погоды">
+      <div class="metrics__item">
+        <dt class="metrics__label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" width="16" height="16" aria-hidden="true">
+            <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2
+                     m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
+          </svg>
+          Ветер
+        </dt>
+        <dd class="metrics__value" id="metric-wind">
+          {{ default_location.current.wind_speed | ru_number(1) }} м/с
+        </dd>
+      </div>
+      <div class="metrics__item">
+        <dt class="metrics__label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" width="16" height="16" aria-hidden="true">
+            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+          </svg>
+          Влажность
+        </dt>
+        <dd class="metrics__value" id="metric-humidity">
+          {{ default_location.current.humidity | ru_number(0) }}%
+        </dd>
+      </div>
+      <div class="metrics__item">
+        <dt class="metrics__label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" width="16" height="16" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          УФ-индекс
+        </dt>
+        <dd class="metrics__value" id="metric-uv">
+          {{ default_location.indices.uv_risk }}
+        </dd>
+      </div>
+      <div class="metrics__item">
+        <dt class="metrics__label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" width="16" height="16" aria-hidden="true">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          Видимость
+        </dt>
+        <dd class="metrics__value" id="metric-visibility">
+          <span id="vis-value">—</span> км
+        </dd>
+      </div>
+      <div class="metrics__item">
+        <dt class="metrics__label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" width="16" height="16" aria-hidden="true">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          </svg>
+          Давление
+        </dt>
+        <dd class="metrics__value" id="metric-pressure">
+          <span id="pressure-value">—</span> гПа
+        </dd>
+      </div>
+    </dl>
+
+    {# Comfort Score #}
+    <div class="comfort {{ default_location.comfort.score | comfort_color }}"
+         aria-label="Индекс комфорта">
+      <div class="comfort__ring-wrapper" role="img"
+           aria-label="Индекс комфорта: {{ default_location.comfort.score | round(0) | int }} из 100">
+        <svg class="comfort__ring" viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="comfort__ring-bg" cx="60" cy="60" r="54"
+                  fill="none" stroke-width="8"/>
+          <circle class="comfort__ring-fill" cx="60" cy="60" r="54"
+                  fill="none" stroke-width="8"
+                  stroke-dasharray="339.29"
+                  stroke-dashoffset="{{ 339.29 - (339.29 * default_location.comfort.score / 100) | round(2) }}"
+                  transform="rotate(-90 60 60)"/>
+          <text x="60" y="60" text-anchor="middle" dy=".35em"
+                class="comfort__ring-text">
+            {{ default_location.comfort.score | round(0) | int }}
+          </text>
+          <text x="60" y="78" text-anchor="middle"
+                class="comfort__ring-label">
+            / 100
+          </text>
+        </svg>
+      </div>
+      <div class="comfort__info">
+        <h2 class="comfort__title">Индекс комфорта</h2>
+        <p class="comfort__desc" id="comfort-desc">
+          {% if default_location.comfort.score >= 71 %}
+            Комфортные условия
+          {% elif default_location.comfort.score >= 41 %}
+            Умеренные условия
+          {% else %}
+            Дискомфортные условия
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    {# Алерты #}
+    <div class="alerts" role="region" aria-label="Предупреждения">
+      {% if default_location.alerts.frost_risk %}
+      <div class="alert alert--frost" role="alert">
+        <span class="alert__icon" aria-hidden="true">❄️</span>
+        Риск заморозков
+      </div>
+      {% endif %}
+      {% if default_location.alerts.high_wind %}
+      <div class="alert alert--wind" role="alert">
+        <span class="alert__icon" aria-hidden="true">💨</span>
+        Сильный ветер (≥ 14 м/с)
+      </div>
+      {% endif %}
+    </div>
+
+    {# Ошибка (управляется JS) #}
+    <div id="hero-error" class="error-state" hidden role="alert" aria-live="assertive">
+      <p class="error-state__message"></p>
+      <details class="error-state__details">
+        <summary>Подробности для разработчика</summary>
+        <pre class="error-state__pre"></pre>
+      </details>
+    </div>
+  </div>
+</section>
+
+{# ── СЕКЦИЯ 2: 7-дневный прогноз ──────────────────────────────────────── #}
+<section class="section" id="forecast-7day"
+         aria-labelledby="forecast-heading" data-observe>
+  <h2 id="forecast-heading" class="section__title">Прогноз на 7 дней</h2>
+
+  {# Skeleton #}
+  <div class="skeleton-group" id="forecast-skeleton" aria-hidden="true">
+    <div class="skeleton skeleton--cards"></div>
+  </div>
+
+  <div id="forecast-content" hidden>
+    {# Карточки дней (горизонтальный scroll на mobile) #}
+    <div class="forecast-cards" role="list" aria-label="Прогноз по дням"
+         id="forecast-cards">
+      {% for card in default_location.daily_cards %}
+      <article class="forecast-card" role="listitem"
+               data-date="{{ card.date }}">
+        <h3 class="forecast-card__day" data-date="{{ card.date }}">
+          {{ card.date }}
+        </h3>
+        <div class="forecast-card__icon" aria-hidden="true">
+          {# Иконка подставляется JS по WMO; для SSR — облако по умолчанию #}
+          {{ _WMO_SVG.cloudy | safe }}
+        </div>
+        <div class="forecast-card__temps">
+          <span class="forecast-card__tmax">
+            {{ card.t_max | ru_number(0) }}°
+          </span>
+          <span class="forecast-card__sep" aria-hidden="true">/</span>
+          <span class="forecast-card__tmin">
+            {{ card.t_min | ru_number(0) }}°
+          </span>
+        </div>
+        <div class="forecast-card__precip"
+             title="Вероятность осадков">
+          🌧 —
+        </div>
+        {% if card.sunshine_hours is defined %}
+        <div class="forecast-card__sun" title="Часов солнца">
+          ☀️ {{ card.sunshine_hours | ru_number(0) }} ч
+        </div>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </div>
+
+    {# График T min/max #}
+    <div class="chart-wrapper" role="img"
+         aria-label="График температуры на 7 дней">
+      <canvas id="chart-forecast" height="200"></canvas>
+    </div>
+
+    {# Тренд температуры #}
+    {% if default_location.trend %}
+    <div class="trend" aria-live="polite">
+      <span class="trend__icon" aria-hidden="true">
+        {% if default_location.trend.trend == "warming" %}↗{% elif default_location.trend.trend == "cooling" %}↘{% else %}→{% endif %}
+      </span>
+      <span class="trend__text">
+        {% if default_location.trend.trend == "warming" %}
+          Теплеет
+        {% elif default_location.trend.trend == "cooling" %}
+          Холодает
+        {% else %}
+          Стабильно
+        {% endif %}
+        (<strong>{{ default_location.trend.slope | ru_number(1) }}°C/день</strong>),
+        достоверность:
+        {% if default_location.trend.confidence == "high" %}высокая
+        {% elif default_location.trend.confidence == "medium" %}средняя
+        {% else %}низкая{% endif %}
+      </span>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{# ── СЕКЦИЯ 3: Почасовой прогноз ──────────────────────────────────────── #}
+<section class="section" id="hourly-forecast"
+         aria-labelledby="hourly-heading" data-observe>
+  <h2 id="hourly-heading" class="section__title">Почасовой прогноз</h2>
+
+  {# Кнопки-фильтры #}
+  <div class="filter-btns" role="group" aria-label="Выбор дня для почасового прогноза">
+    <button class="filter-btn filter-btn--active" data-day="0"
+            type="button" aria-pressed="true">Сегодня</button>
+    <button class="filter-btn" data-day="1"
+            type="button" aria-pressed="false">Завтра</button>
+    <button class="filter-btn" data-day="2"
+            type="button" aria-pressed="false">Послезавтра</button>
+  </div>
+
+  <div class="skeleton-group" id="hourly-skeleton" aria-hidden="true">
+    <div class="skeleton skeleton--chart"></div>
+  </div>
+
+  <div id="hourly-content" hidden>
+    <div class="chart-wrapper" role="img"
+         aria-label="Почасовой прогноз осадков и температуры">
+      <canvas id="chart-hourly" height="220"></canvas>
+    </div>
+
+    {# UV полоса по часам #}
+    <div class="uv-strip" aria-label="УФ-индекс по часам" id="uv-strip">
+      <p class="uv-strip__label">УФ по часам:</p>
+      <div class="uv-strip__cells" id="uv-cells" role="list"></div>
+    </div>
+  </div>
+</section>
+
+{# ── СЕКЦИЯ 4: Расчётные индексы ──────────────────────────────────────── #}
+<section class="section" id="weather-indices"
+         aria-labelledby="indices-heading" data-observe>
+  <h2 id="indices-heading" class="section__title">Метеоиндексы</h2>
+
+  <div class="skeleton-group" id="indices-skeleton" aria-hidden="true">
+    <div class="skeleton skeleton--grid"></div>
+  </div>
+
+  <div id="indices-content" hidden>
+    <div class="indices-grid">
+
+      {# Heat Index #}
+      <article class="index-card" aria-label="Тепловой индекс">
+        <h3 class="index-card__title">Тепловой индекс</h3>
+        <div class="index-card__value">
+          {{ default_location.indices.heat_index | ru_number(1) }}
+          <span class="index-card__unit">°C</span>
+        </div>
+        <p class="index-card__status index-card__status--info">
+          Ощущаемый жар
+        </p>
+        <div class="index-card__tooltip" role="tooltip">
+          Комбинированный эффект температуры и влажности (NWS).
+          Применимо при T ≥ 27°C, RH ≥ 40%.
+        </div>
+      </article>
+
+      {# Wind Chill #}
+      <article class="index-card" aria-label="Охлаждение ветром">
+        <h3 class="index-card__title">Охлаждение ветром</h3>
+        <div class="index-card__value">
+          {{ default_location.indices.wind_chill | ru_number(1) }}
+          <span class="index-card__unit">°C</span>
+        </div>
+        <p class="index-card__status index-card__status--info">
+          Ощущаемый холод
+        </p>
+        <div class="index-card__tooltip" role="tooltip">
+          Wind Chill Index (Environment Canada, 2001).
+          Применимо при T ≤ 10°C, V ≥ 1.3 м/с.
+        </div>
+      </article>
+
+      {# Humidex #}
+      <article class="index-card" aria-label="Humidex">
+        <h3 class="index-card__title">Humidex</h3>
+        <div class="index-card__value">
+          {{ default_location.indices.humidex | ru_number(1) }}
+          <span class="index-card__unit">°C</span>
+        </div>
+        <p class="index-card__status index-card__status--info">
+          Дискомфорт от жары
+        </p>
+        <div class="index-card__tooltip" role="tooltip">
+          Канадский индекс дискомфорта (MSC, 1979).
+          ≥ 40 — опасная жара.
+        </div>
+      </article>
+
+      {# Dew Point #}
+      <article class="index-card" aria-label="Точка росы">
+        <h3 class="index-card__title">Точка росы</h3>
+        <div class="index-card__value">
+          {{ default_location.indices.dew_point | ru_number(1) }}
+          <span class="index-card__unit">°C</span>
+        </div>
+        <p class="index-card__status index-card__status--info">
+          Конденсация при охлаждении
+        </p>
+        <div class="index-card__tooltip" role="tooltip">
+          Формула Magnus (α=17.625, β=243.04°C).
+          Высокая точка росы → ощущение духоты.
+        </div>
+      </article>
+
+      {# Precipitation Intensity #}
+      <article class="index-card" aria-label="Интенсивность осадков">
+        <h3 class="index-card__title">Осадки сейчас</h3>
+        <div class="index-card__value" id="precip-intensity-val">
+          {{ default_location.current.precipitation | ru_number(1) }}
+          <span class="index-card__unit">мм/ч</span>
+        </div>
+        <p class="index-card__status" id="precip-intensity-cat">
+          {{ default_location.indices.precip_intensity }}
+        </p>
+        <div class="index-card__tooltip" role="tooltip">
+          Классификация ВМО (WMO No. 8):
+          &lt;0.5 Следы · 0.5–2.5 Слабые · 2.5–7.5 Умеренные
+          · 7.5–50 Сильные · &gt;50 Ливневые.
+        </div>
+      </article>
+
+      {# AQI #}
+      <article class="index-card" aria-label="Качество воздуха">
+        <h3 class="index-card__title">Качество воздуха</h3>
+        <div class="index-card__value" id="aqi-val">
+          {% if default_location.indices.aqi is not none %}
+            {{ default_location.indices.aqi | ru_number(0) }}
+          {% else %}
+            —
+          {% endif %}
+        </div>
+        <p class="index-card__status" id="aqi-cat">
+          {{ default_location.indices.aqi_category }}
+        </p>
+        <div class="index-card__tooltip" role="tooltip">
+          European Air Quality Index (EEA).
+          0–20 Хороший · 21–40 Удовлетворительный
+          · 41–60 Умеренный · 61–80 Плохой
+          · 81–100 Очень плохой · &gt;100 Крайне плохой.
+        </div>
+      </article>
+
+    </div>
+
+    {# Пустое состояние #}
+    <div id="indices-empty" class="empty-state" hidden>
+      <span class="empty-state__icon" aria-hidden="true">📭</span>
+      <p>Нет данных</p>
+    </div>
+  </div>
+</section>
+
+{# ── СЕКЦИЯ 5: Качество воздуха ───────────────────────────────────────── #}
+<section class="section" id="air-quality"
+         aria-labelledby="aq-heading" data-observe>
+  <h2 id="aq-heading" class="section__title">Качество воздуха</h2>
+
+  <div class="skeleton-group" id="aq-skeleton" aria-hidden="true">
+    <div class="skeleton skeleton--gauge"></div>
+  </div>
+
+  <div id="aq-content" hidden>
+
+    {# Gauge (полукруг) для European AQI #}
+    <div class="gauge-wrapper" aria-label="European AQI gauge">
+      <canvas id="chart-aqi-gauge" height="200" width="400"></canvas>
+      <div class="gauge-center" aria-hidden="true">
+        <span class="gauge-center__value" id="gauge-aqi-val">
+          {% if default_location.air_quality.current_aqi is not none %}
+            {{ default_location.air_quality.current_aqi | round(0) | int }}
+          {% else %}
+            —
+          {% endif %}
+        </span>
+        <span class="gauge-center__label">AQI (EU)</span>
+        <span class="gauge-center__cat" id="gauge-aqi-cat">
+          {{ default_location.air_quality.aqi_category }}
+        </span>
+      </div>
+    </div>
+
+    {# График PM2.5 и PM10 за 24 ч #}
+    <div class="chart-wrapper" role="img"
+         aria-label="График PM2.5 и PM10 за 24 часа">
+      <canvas id="chart-pm" height="180"></canvas>
+    </div>
+
+    {# Мини-карточки газов #}
+    <div class="aq-grid" aria-label="Концентрации загрязнителей">
+
+      <article class="aq-card" aria-label="Монооксид углерода">
+        <h3 class="aq-card__title">CO</h3>
+        <div class="aq-card__value" id="aq-co">—</div>
+        <p class="aq-card__unit">мкг/м³</p>
+        <p class="aq-card__norm">
+          Норма ВОЗ: &lt; 4 мг/м³ (24 ч)
+        </p>
+      </article>
+
+      <article class="aq-card" aria-label="Диоксид азота">
+        <h3 class="aq-card__title">NO₂</h3>
+        <div class="aq-card__value" id="aq-no2">—</div>
+        <p class="aq-card__unit">мкг/м³</p>
+        <p class="aq-card__norm">
+          Норма ВОЗ: &lt; 25 мкг/м³ (24 ч)
+        </p>
+      </article>
+
+      <article class="aq-card" aria-label="Озон">
+        <h3 class="aq-card__title">O₃</h3>
+        <div class="aq-card__value" id="aq-o3">—</div>
+        <p class="aq-card__unit">мкг/м³</p>
+        <p class="aq-card__norm">
+          Норма ВОЗ: &lt; 100 мкг/м³ (8 ч)
+        </p>
+      </article>
+
+    </div>
+
+    {# Пустое состояние #}
+    <div id="aq-empty" class="empty-state" hidden>
+      <span class="empty-state__icon" aria-hidden="true">📭</span>
+      <p>Нет данных о качестве воздуха</p>
+    </div>
+
+  </div>
+</section>
+
+</main>
+
+{# ── ВЫБОР ГОРОДА (переключатель снимков) ─────────────────────────────── #}
+{% if locations | length > 1 %}
+<aside class="city-switcher" aria-label="Переключение городов">
+  <div class="city-switcher__inner">
+    <span class="city-switcher__label">Снимки городов:</span>
+    {% for loc in locations %}
+    <button
+      class="city-switcher__btn {% if loop.first %}city-switcher__btn--active{% endif %}"
+      data-location-idx="{{ loop.index0 }}"
+      type="button"
+      aria-pressed="{{ 'true' if loop.first else 'false' }}"
+    >
+      {{ loc.name }}
+    </button>
+    {% endfor %}
+  </div>
+</aside>
+{% endif %}
+
+{# Footer #}
+{% include "components/footer.html.j2" %}
+
+{# ═══════════════════════════════════════════════════════════════════════════
+   ДАННЫЕ ДЛЯ JS
+════════════════════════════════════════════════════════════════════════════ #}
+<script>
+  // Данные, инжектированные сервером (Snapshot mode fallback)
+  const SERVER_DATA = {{ locations | tojson }};
+  const GENERATED_AT = {{ generated_at | tojson }};
+</script>
+
+{# Chart.js с SRI #}
+<script
+  src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"
+  integrity="sha384-S6rHXvv+n/BNMD1WEZdijFJ9uOjgxUeP5eGR7jABnKZfC7k3UoJBIBvYniGnPxL"
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+></script>
+
+<script src="assets/dashboard.js" defer></script>
+</body>
+</html>

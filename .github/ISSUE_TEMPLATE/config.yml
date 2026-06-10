@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Документация
+    url: https://github.com/Loliconus/Weather-Dashboard-Open-Meteo-API#readme
+    about: README и инструкции по локальной разработке
+  - name: 🌤 Open-Meteo API Docs
+    url: https://open-meteo.com/en/docs
+    about: Официальная документация Open-Meteo API

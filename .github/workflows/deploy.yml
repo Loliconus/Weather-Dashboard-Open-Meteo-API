@@ -1,0 +1,123 @@
+# Триггеры:
+#   - push в main       → deploy
+#   - cron 06:00 MSK    → ежедневный snapshot
+#   - workflow_dispatch → ручной запуск
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 3 * * *"   # 06:00 MSK = 03:00 UTC
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Причина ручного запуска"
+        required: false
+        default: "Manual trigger"
+
+# OIDC — без secrets, минимальные права
+permissions:
+  contents: read
+  pages:    write
+  id-token: write
+
+# Один одновременный деплой; новый run отменяет предыдущий pending
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────
+  build:
+    name: Build snapshot + lint/test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url:  ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      # ── 1. Checkout ────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        # actions/checkout v4.2.2
+
+      # ── 2. Python ──────────────────────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b
+        # actions/setup-python v5.3.0
+        with:
+          python-version-file: ".python-version"
+
+      # ── 3. uv ──────────────────────────────────────────────────────────
+      - name: Install uv
+        uses: astral-sh/setup-uv@887a942a15af3a7626099df99e897a18d9e5ab3a
+        # astral-sh/setup-uv v4.2.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      # ── 4. Зависимости ─────────────────────────────────────────────────
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras
+
+      # ── 5. Quality gates (блокируют деплой при провале) ────────────────
+      - name: Ruff lint
+        run: uv run ruff check src/ tests/
+
+      - name: Ruff format check
+        run: uv run ruff format --check src/ tests/
+
+      - name: Type check
+        run: uv run ty check src/
+
+      - name: Run tests
+        run: |
+          uv run pytest \
+            --cov=src \
+            --cov-report=term-missing \
+            --cov-fail-under=80 \
+            -q
+
+      # ── 6. Генерация snapshot ──────────────────────────────────────────
+      - name: Generate snapshot (Snapshot mode)
+        run: uv run python -m weather_dashboard.rendering.generator
+        env:
+          LOG_LEVEL: INFO
+          # Переопределить дефолтные локации можно через env если нужно
+
+      # ── 7. Проверяем что docs/ сгенерирован ────────────────────────────
+      - name: Verify docs output
+        run: |
+          test -f docs/index.html  || (echo "docs/index.html not found!" && exit 1)
+          test -f docs/about.html  || (echo "docs/about.html not found!" && exit 1)
+          test -f docs/assets/data.js || (echo "docs/assets/data.js not found!" && exit 1)
+          echo "✓ docs/ output verified"
+
+      # ── 8. Логируем статистику запросов (счётчик для контроля лимитов) ─
+      - name: Log API request stats
+        run: |
+          echo "=== API Request Budget ==="
+          echo "Snapshot locations: 3"
+          echo "Requests per location: ~4 (forecast + aq + elevation + geocoding)"
+          echo "Total this run: ~12 / 10000 daily limit"
+          echo "========================="
+
+      # ── 9. Upload Pages artifact ───────────────────────────────────────
+      - name: Setup Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
+        # actions/configure-pages v5.0.0
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
+        # actions/upload-pages-artifact v3.0.1
+        with:
+          path: docs/
+
+      # ── 10. Deploy ─────────────────────────────────────────────────────
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
+        # actions/deploy-pages v4.0.5

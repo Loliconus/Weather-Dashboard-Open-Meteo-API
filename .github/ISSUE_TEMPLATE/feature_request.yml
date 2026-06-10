@@ -1,0 +1,83 @@
+name: 🚀 Запрос функциональности
+description: Предложите новую функцию или улучшение
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+assignees:
+  - Loliconus
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Спасибо за идею! Опишите её максимально подробно.
+
+  - type: checkboxes
+    id: existing-issues
+    attributes:
+      label: Предварительная проверка
+      options:
+        - label: >
+            Я проверил, что похожий запрос ещё не был
+            [зарегистрирован](../../issues)
+          required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Область
+      options:
+        - UI / Dashboard
+        - API интеграция
+        - Метеоиндексы / расчёты
+        - Графики
+        - Производительность
+        - Документация
+        - CI/CD
+        - Другое
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Описание проблемы
+      description: >
+        Какую проблему решает эта функция?
+        Например: "Мне неудобно, когда..."
+      placeholder: >
+        Сейчас невозможно сравнить погоду двух городов одновременно...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Предлагаемое решение
+      description: Как именно должна работать новая функция?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Рассмотренные альтернативы
+      description: Какие другие подходы вы рассматривали?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Приоритет (с вашей точки зрения)
+      options:
+        - Низкий (nice-to-have)
+        - Средний (заметное улучшение)
+        - Высокий (существенно влияет на UX)
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Дополнительный контекст
+      description: Скриншоты, ссылки, примеры из других проектов.

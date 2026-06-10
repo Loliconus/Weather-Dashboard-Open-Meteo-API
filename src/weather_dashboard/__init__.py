@@ -1,26 +1,12 @@
-# =============================================================
-# ПУТЬ        : src/weather_dashboard/__init__.py
-# ОБОЗНАЧЕНИЕ : WD.PKG.00
-# НАИМЕНОВАНИЕ: Публичный API пакета
-# ДОКУМЕНТ    : КС-СТО-1.04.СК
-# ПРОГРАММА   : Weather Dashboard
-# ЗАВИСИМОСТИ : importlib.metadata, bootstrap.boot
-# =============================================================
-# Назначение:
-#   Точка входа пакета. Экспортирует boot() и __version__.
-#   Версия читается из манифеста — SSOT в pyproject.toml.
-#   Проверка: python -c "import weather_dashboard; print(weather_dashboard.__version__)"
-# =============================================================
+"""Weather Dashboard — Open-Meteo API.
 
-from __future__ import annotations
+Портфолио-проект Loliconus.
+Демонстрирует: REST API integration, ETL, Chart.js, Dual-mode CI/CD.
 
-import importlib.metadata
+Лицензия кода: MIT
+Лицензия данных: CC BY 4.0 (Open-Meteo)
+"""
 
-from weather_dashboard.bootstrap.boot import Runtime, boot
-
-try:
-    __version__: str = importlib.metadata.version("weather-dashboard")
-except importlib.metadata.PackageNotFoundError:  # pragma: no cover
-    __version__ = "0.0.0+unknown"
-
-__all__ = ["boot", "Runtime", "__version__"]
+__version__ = "1.0.0"
+__author__ = "Loliconus"
+__license__ = "MIT"

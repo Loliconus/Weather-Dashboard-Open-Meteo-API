@@ -1,0 +1,78 @@
+# Запускается на каждый PR в main — без деплоя.
+# Те же проверки что и deploy.yml, но только до шага generate.
+
+name: Quality Gates
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint · Typecheck · Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # ── 1. Checkout ──────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        # actions/checkout v4.2.2
+
+      # ── 2. Python ────────────────────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b
+        # actions/setup-python v5.3.0
+        with:
+          python-version-file: ".python-version"
+
+      # ── 3. uv ────────────────────────────────────────────────────────
+      - name: Install uv
+        uses: astral-sh/setup-uv@887a942a15af3a7626099df99e897a18d9e5ab3a
+        # astral-sh/setup-uv v4.2.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      # ── 4. Зависимости из lockfile (детерминированная сборка) ────────
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras
+
+      # ── 5. Ruff lint ─────────────────────────────────────────────────
+      - name: Ruff lint
+        run: uv run ruff check src/ tests/
+        # exit 1 при ошибках — блокирует pipeline
+
+      # ── 6. Ruff format check ─────────────────────────────────────────
+      - name: Ruff format check
+        run: uv run ruff format --check src/ tests/
+
+      # ── 7. Type check (ty) ───────────────────────────────────────────
+      - name: Type check
+        run: uv run ty check src/
+        # strict mode задан в pyproject.toml [tool.ty]
+
+      # ── 8. Tests + coverage ──────────────────────────────────────────
+      - name: Run tests
+        run: |
+          uv run pytest \
+            --cov=src \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            --cov-fail-under=80 \
+            -v
+
+      # ── 9. Upload coverage report (артефакт для PR review) ───────────
+      - name: Upload coverage report
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b
+        # actions/upload-artifact v4.5.0
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 7
