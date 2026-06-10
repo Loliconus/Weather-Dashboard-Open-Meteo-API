@@ -464,12 +464,15 @@ class AirQualityResponse:
 
     Args:
         metadata: Метаданные (координаты, timezone).
+        time: Список ISO 8601 timestamps (один на час).
         hourly: Словарь {переменная: list[float | None]}.
+                Не содержит ключ "time" — он вынесен в отдельное поле.
         units: Словарь {переменная: единица}.
     """
 
     metadata: ForecastMetadata
-    hourly: dict[str, list[float | None]]
+    time: list[str]                          # ← отдельное типизированное поле
+    hourly: dict[str, list[float | None]]    # ← теперь только float|None
     units: dict[str, str]
 
     @classmethod
@@ -482,18 +485,18 @@ class AirQualityResponse:
         Returns:
             Экземпляр AirQualityResponse.
         """
-        raw_hourly = data.get("hourly", {})
-        parsed: dict[str, list[float | None]] = {}
-        for key, values in raw_hourly.items():
-            if key == "time":
-                continue
-            parsed[key] = [float(v) if v is not None else None for v in values]
-        # Включаем time отдельно
-        parsed["time"] = [str(t) for t in raw_hourly.get("time", [])]  # type: ignore[assignment]
+        raw_hourly: dict[str, Any] = data.get("hourly", {})
+
+        parsed: dict[str, list[float | None]] = {
+            key: [float(v) if v is not None else None for v in values]
+            for key, values in raw_hourly.items()
+            if key != "time"               # time обрабатывается отдельно
+        }
 
         return cls(
             metadata=ForecastMetadata.from_dict(data),
-            hourly=parsed,
+            time=[str(t) for t in raw_hourly.get("time", [])],  # list[str] ✓
+            hourly=parsed,                                        # list[float|None] ✓
             units=dict(data.get("hourly_units", {})),
         )
 
@@ -501,6 +504,7 @@ class AirQualityResponse:
         """Сериализует в JSON-совместимый словарь."""
         return {
             "metadata": self.metadata.to_dict(),
+            "time": self.time,
             "hourly": self.hourly,
             "units": self.units,
         }

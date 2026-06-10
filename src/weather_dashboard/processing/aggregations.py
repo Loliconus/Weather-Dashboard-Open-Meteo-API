@@ -196,21 +196,22 @@ def dominant_wind_direction(hourly: HourlyForecast) -> dict[str, float]:
     result: dict[str, float] = {}
 
     for date, indices in _day_slices(hourly):
-        dirs = [
-            hourly.wind_direction_10m[i]
+        # Walrus-оператор: d привязывается в условии → ty сужает до float ✓
+        dirs: list[float] = [
+            d
             for i in indices
-            if hourly.wind_direction_10m[i] is not None
+            if (d := hourly.wind_direction_10m[i]) is not None
         ]
 
         if not dirs:
             result[date] = 0.0
             continue
 
-        sin_sum = sum(math.sin(math.radians(d)) for d in dirs)
-        cos_sum = sum(math.cos(math.radians(d)) for d in dirs)
+        n = float(len(dirs))
+        sin_sum = sum(math.sin(math.radians(d)) for d in dirs)   # d: float ✓
+        cos_sum = sum(math.cos(math.radians(d)) for d in dirs)   # d: float ✓
 
-        mean_dir = math.degrees(math.atan2(sin_sum, cos_sum))
-        # atan2 возвращает [-180, 180] → нормализуем в [0, 360)
+        mean_dir = math.degrees(math.atan2(sin_sum / n, cos_sum / n))
         result[date] = float(mean_dir % 360.0)
 
     return result
@@ -263,15 +264,15 @@ def sunshine_hours(hourly: HourlyForecast) -> dict[str, float]:
     Notes:
         None-значения пропускаются (не считаются ни солнечными, ни пасмурными).
     """
-    _THRESHOLD = 120.0  # Вт/м²
+    _THRESHOLD: float = 120.0  # Вт/м² (WMO); явная аннотация → N806 не нужен
     result: dict[str, float] = {}
 
     for date, indices in _day_slices(hourly):
         count = sum(
             1
             for i in indices
-            if hourly.shortwave_radiation[i] is not None
-            and hourly.shortwave_radiation[i] > _THRESHOLD  # type: ignore[operator]
+            if (rad := hourly.shortwave_radiation[i]) is not None
+            and rad > _THRESHOLD   # rad: float ✓, оператор > валиден
         )
         result[date] = float(count)
 
