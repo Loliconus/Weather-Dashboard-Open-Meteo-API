@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import time
 from pathlib import Path
 
 import httpx
@@ -19,7 +18,6 @@ from tests.conftest import (
 from weather_dashboard.api.client import WeatherClient
 from weather_dashboard.api.models import (
     AirQualityResponse,
-    ElevationResponse,
     ForecastResponse,
     Location,
     WeatherAPIError,
@@ -27,15 +25,16 @@ from weather_dashboard.api.models import (
 )
 from weather_dashboard.config import AppConfig
 
-
 # ---------------------------------------------------------------------------
 # Фикстуры
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def tmp_cfg(tmp_path: Path) -> AppConfig:
     """AppConfig с временным CACHE_DIR (изолирован от реального кеша)."""
     import dataclasses
+
     return dataclasses.replace(
         AppConfig(),
         CACHE_DIR=tmp_path / ".cache",
@@ -67,6 +66,7 @@ def elevation_url() -> str:
 # get_forecast
 # ---------------------------------------------------------------------------
 
+
 class TestGetForecast:
     @respx.mock
     async def test_200_deserializes_correctly(self, tmp_cfg, forecast_url):
@@ -75,7 +75,9 @@ class TestGetForecast:
             return_value=httpx.Response(200, json=make_forecast_dict())
         )
         async with WeatherClient(tmp_cfg) as client:
-            result = await client.get_forecast(55.7558, 37.6173, timezone="Europe/Moscow")
+            result = await client.get_forecast(
+                55.7558, 37.6173, timezone="Europe/Moscow"
+            )
 
         assert isinstance(result, ForecastResponse)
         assert result.current.temperature_2m == 22.5
@@ -97,9 +99,7 @@ class TestGetForecast:
     async def test_400_raises_weather_api_error(self, tmp_cfg, forecast_url):
         """HTTP 400 + {"reason": "..."} → WeatherAPIError с RFC 9457."""
         respx.get(forecast_url).mock(
-            return_value=httpx.Response(
-                400, json={"reason": "Invalid latitude value"}
-            )
+            return_value=httpx.Response(400, json={"reason": "Invalid latitude value"})
         )
         async with WeatherClient(tmp_cfg) as client:
             with pytest.raises(WeatherAPIError) as exc_info:
@@ -127,9 +127,7 @@ class TestGetForecast:
     @respx.mock
     async def test_500_retries_then_raises(self, tmp_cfg, forecast_url):
         """HTTP 500 → 3 retry → WeatherClientError."""
-        respx.get(forecast_url).mock(
-            return_value=httpx.Response(500)
-        )
+        respx.get(forecast_url).mock(return_value=httpx.Response(500))
         async with WeatherClient(tmp_cfg) as client:
             with pytest.raises(WeatherClientError):
                 await client.get_forecast(55.7558, 37.6173, timezone="auto")
@@ -163,7 +161,7 @@ class TestGetForecast:
         cache_files = list(tmp_cfg.CACHE_DIR.glob("forecast_*.json"))
         for f in cache_files:
             data = json.loads(f.read_text())
-            data["_cached_at"] = 0.0   # устарел с эпохи Unix
+            data["_cached_at"] = 0.0  # устарел с эпохи Unix
             f.write_text(json.dumps(data))
 
         # Второй запрос — сетевая ошибка
@@ -171,7 +169,9 @@ class TestGetForecast:
 
         async with WeatherClient(tmp_cfg) as client:
             # Должен вернуть из stale-кеша, не бросать
-            result = await client.get_forecast(55.7558, 37.6173, timezone="Europe/Moscow")
+            result = await client.get_forecast(
+                55.7558, 37.6173, timezone="Europe/Moscow"
+            )
 
         assert isinstance(result, ForecastResponse)
 
@@ -179,6 +179,7 @@ class TestGetForecast:
 # ---------------------------------------------------------------------------
 # search_locations
 # ---------------------------------------------------------------------------
+
 
 class TestSearchLocations:
     @respx.mock
@@ -227,12 +228,11 @@ class TestSearchLocations:
 # get_air_quality
 # ---------------------------------------------------------------------------
 
+
 class TestGetAirQuality:
     @respx.mock
     async def test_200_deserializes_correctly(self, tmp_cfg, aq_url):
-        respx.get(aq_url).mock(
-            return_value=httpx.Response(200, json=make_aq_dict())
-        )
+        respx.get(aq_url).mock(return_value=httpx.Response(200, json=make_aq_dict()))
         async with WeatherClient(tmp_cfg) as client:
             result = await client.get_air_quality(55.7558, 37.6173)
 
@@ -251,6 +251,7 @@ class TestGetAirQuality:
 # ---------------------------------------------------------------------------
 # get_elevation
 # ---------------------------------------------------------------------------
+
 
 class TestGetElevation:
     @respx.mock
@@ -299,6 +300,7 @@ class TestGetElevation:
 # ---------------------------------------------------------------------------
 # User-Agent header
 # ---------------------------------------------------------------------------
+
 
 class TestUserAgent:
     @respx.mock

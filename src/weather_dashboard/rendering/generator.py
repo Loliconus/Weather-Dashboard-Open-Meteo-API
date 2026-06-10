@@ -13,7 +13,7 @@ import asyncio
 import json
 import logging
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -25,7 +25,8 @@ from weather_dashboard.api.models import (
     ForecastResponse,
     WeatherClientError,
 )
-from weather_dashboard.config import AppConfig, config as default_config
+from weather_dashboard.config import AppConfig
+from weather_dashboard.config import config as default_config
 from weather_dashboard.processing import aggregations, indices
 
 logger = logging.getLogger(__name__)
@@ -36,15 +37,29 @@ _TEMPLATES_DIR = Path(__file__).parent / "templates"
 # WMO weather code → описание на русском
 _WMO_DESCRIPTIONS: dict[int, str] = {
     0: "Ясно",
-    1: "Преимущественно ясно", 2: "Переменная облачность", 3: "Пасмурно",
-    45: "Туман", 48: "Изморозь",
-    51: "Лёгкая морось", 53: "Умеренная морось", 55: "Сильная морось",
-    61: "Слабый дождь", 63: "Умеренный дождь", 65: "Сильный дождь",
-    71: "Слабый снег", 73: "Умеренный снег", 75: "Сильный снег",
+    1: "Преимущественно ясно",
+    2: "Переменная облачность",
+    3: "Пасмурно",
+    45: "Туман",
+    48: "Изморозь",
+    51: "Лёгкая морось",
+    53: "Умеренная морось",
+    55: "Сильная морось",
+    61: "Слабый дождь",
+    63: "Умеренный дождь",
+    65: "Сильный дождь",
+    71: "Слабый снег",
+    73: "Умеренный снег",
+    75: "Сильный снег",
     77: "Снежная крупа",
-    80: "Слабые ливни", 81: "Умеренные ливни", 82: "Сильные ливни",
-    85: "Слабый снегопад", 86: "Сильный снегопад",
-    95: "Гроза", 96: "Гроза с градом", 99: "Сильная гроза с градом",
+    80: "Слабые ливни",
+    81: "Умеренные ливни",
+    82: "Сильные ливни",
+    85: "Слабый снегопад",
+    86: "Сильный снегопад",
+    95: "Гроза",
+    96: "Гроза с градом",
+    99: "Сильная гроза с градом",
 }
 
 # WMO weather code → inline SVG (упрощённые иконки)
@@ -60,12 +75,12 @@ _WMO_SVG: dict[str, str] = {
         '<line x1="21" y1="12" x2="23" y2="12"/>'
         '<line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>'
         '<line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
-        '</svg>'
+        "</svg>"
     ),
     "cloudy": (
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'
         '<path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>'
-        '</svg>'
+        "</svg>"
     ),
     "rain": (
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'
@@ -73,7 +88,7 @@ _WMO_SVG: dict[str, str] = {
         '<line x1="8" y1="13" x2="8" y2="21"/>'
         '<line x1="12" y1="15" x2="12" y2="23"/>'
         '<path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/>'
-        '</svg>'
+        "</svg>"
     ),
     "snow": (
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'
@@ -87,13 +102,13 @@ _WMO_SVG: dict[str, str] = {
         '<line x1="16" y1="16" x2="16" y2="21"/>'
         '<line x1="16" y1="21" x2="14" y2="19"/>'
         '<line x1="16" y1="21" x2="18" y2="19"/>'
-        '</svg>'
+        "</svg>"
     ),
     "storm": (
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'
         '<path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"/>'
         '<polyline points="13 11 9 17 15 17 11 23"/>'
-        '</svg>'
+        "</svg>"
     ),
     "fog": (
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'
@@ -101,7 +116,7 @@ _WMO_SVG: dict[str, str] = {
         '<line x1="3" y1="19" x2="21" y2="19"/>'
         '<path d="M10 3 Q12 1 14 3 Q16 5 18 3"/>'
         '<path d="M5 7 Q8 5 11 7 Q14 9 17 7 Q19 5 21 7"/>'
-        '</svg>'
+        "</svg>"
     ),
 }
 
@@ -167,9 +182,9 @@ def _build_location_context(
     dp = indices.dew_point(t, rh) if rh > 0 else t
     uv_risk = indices.uv_risk_level(uv_now)
     comfort = indices.comfort_score(t, rh, v, uv_now, precip)
-    frost = indices.frost_risk(min(
-        (x for x in hourly.temperature_2m if x is not None), default=0.0
-    ))
+    frost = indices.frost_risk(
+        min((x for x in hourly.temperature_2m if x is not None), default=0.0)
+    )
     wind_alert = indices.high_wind_alert(v, gusts)
 
     # Тренд температур
@@ -271,9 +286,18 @@ def _build_location_context(
             "current_aqi": current_aqi,
             "aqi_category": aqi_cat,
             "hourly": {
-                k: v for k, v in air_q.hourly.items()
-                if k in ("time", "pm10", "pm2_5", "carbon_monoxide",
-                         "nitrogen_dioxide", "ozone", "european_aqi")
+                k: v
+                for k, v in air_q.hourly.items()
+                if k
+                in (
+                    "time",
+                    "pm10",
+                    "pm2_5",
+                    "carbon_monoxide",
+                    "nitrogen_dioxide",
+                    "ozone",
+                    "european_aqi",
+                )
             },
             "units": air_q.units,
         },
@@ -327,7 +351,8 @@ async def _fetch_location(
         logger.debug("Elevation %s: %.1f м", name, elevation)
 
         forecast = await client.get_forecast(
-            lat, lon,
+            lat,
+            lon,
             timezone=tz,
             forecast_days=cfg.FORECAST_DAYS,
         )
@@ -346,7 +371,7 @@ async def _fetch_location(
         logger.warning(
             "Сетевая ошибка для локации %s: %s. Пробуем fallback-кеш.", name, exc
         )
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         logger.warning(
             "Неожиданная ошибка для локации %s: %s. Пробуем fallback-кеш.", name, exc
         )
@@ -464,19 +489,18 @@ async def generate(cfg: AppConfig = default_config) -> None:
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
 
-    logger.info("Начало генерации snapshot. Локации: %s",
-                [loc["name"] for loc in cfg.SNAPSHOT_LOCATIONS])
+    logger.info(
+        "Начало генерации snapshot. Локации: %s",
+        [loc["name"] for loc in cfg.SNAPSHOT_LOCATIONS],
+    )
 
-    generated_at = datetime.now(timezone.utc).isoformat()
+    generated_at = datetime.now(UTC).isoformat()
 
     # ── Сбор данных ──────────────────────────────────────────────────────
     location_contexts: list[dict[str, Any]] = []
 
     async with WeatherClient(cfg) as client:
-        tasks = [
-            _fetch_location(client, loc, cfg)
-            for loc in cfg.SNAPSHOT_LOCATIONS
-        ]
+        tasks = [_fetch_location(client, loc, cfg) for loc in cfg.SNAPSHOT_LOCATIONS]
         results = await asyncio.gather(*tasks, return_exceptions=False)
 
     for loc_cfg, result in zip(cfg.SNAPSHOT_LOCATIONS, results, strict=False):
@@ -501,14 +525,13 @@ async def generate(cfg: AppConfig = default_config) -> None:
 
     # Общий контекст для всех шаблонов
     from weather_dashboard import __version__
+
     base_ctx: dict[str, Any] = {
         "locations": location_contexts,
         "default_location": location_contexts[0],
         "generated_at": generated_at,
         "version": __version__,
-        "repo_url": (
-            "https://github.com/Loliconus/Weather-Dashboard-Open-Meteo-API"
-        ),
+        "repo_url": ("https://github.com/Loliconus/Weather-Dashboard-Open-Meteo-API"),
         "author": "Loliconus",
     }
 
@@ -523,7 +546,7 @@ async def generate(cfg: AppConfig = default_config) -> None:
 
     logger.info(
         "Генерация завершена. Файлы: %s",
-        [str(p) for p in cfg.OUTPUT_DIR.rglob("*.html")]
+        [str(p) for p in cfg.OUTPUT_DIR.rglob("*.html")],
     )
 
 
@@ -546,7 +569,7 @@ def _render_template(
         html = tmpl.render(**context)
         output_path.write_text(html, encoding="utf-8")
         logger.info("Рендеринг OK: %s", output_path)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         logger.error("Ошибка рендеринга %s: %s", template_name, exc)
 
 

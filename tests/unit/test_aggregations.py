@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import warnings
-
 import pytest
 
 from tests.conftest import make_forecast_dict
@@ -113,9 +111,7 @@ class TestDominantWindDirection:
         assert result  # не пустой
         for v in result.values():
             # Результат должен быть близко к 0° (допуск ±30°)
-            assert v <= 30.0 or v >= 330.0, (
-                f"Ожидалось ≈ 0°, получено {v}°"
-            )
+            assert v <= 30.0 or v >= 330.0, f"Ожидалось ≈ 0°, получено {v}°"
 
     def test_uniform_south(self):
         d = make_forecast_dict(n_hours=24)
@@ -186,8 +182,8 @@ class TestPrecipitationType:
     def test_rain_dominant(self):
         d = make_forecast_dict(n_hours=24)
         d["hourly"]["precipitation"] = [2.0] * 24
-        d["hourly"]["rain"]          = [2.0] * 24
-        d["hourly"]["snowfall"]      = [0.0] * 24
+        d["hourly"]["rain"] = [2.0] * 24
+        d["hourly"]["snowfall"] = [0.0] * 24
         hourly = ForecastResponse.from_dict(d).hourly
         result = precipitation_type(hourly)
         for v in result.values():
@@ -196,8 +192,8 @@ class TestPrecipitationType:
     def test_snow_dominant(self):
         d = make_forecast_dict(n_hours=24)
         d["hourly"]["precipitation"] = [2.0] * 24
-        d["hourly"]["rain"]          = [0.0] * 24
-        d["hourly"]["snowfall"]      = [2.0] * 24
+        d["hourly"]["rain"] = [0.0] * 24
+        d["hourly"]["snowfall"] = [2.0] * 24
         hourly = ForecastResponse.from_dict(d).hourly
         result = precipitation_type(hourly)
         for v in result.values():
@@ -206,8 +202,8 @@ class TestPrecipitationType:
     def test_mixed(self):
         d = make_forecast_dict(n_hours=24)
         d["hourly"]["precipitation"] = [2.0] * 24
-        d["hourly"]["rain"]          = [1.0] * 24
-        d["hourly"]["snowfall"]      = [1.0] * 24
+        d["hourly"]["rain"] = [1.0] * 24
+        d["hourly"]["snowfall"] = [1.0] * 24
         hourly = ForecastResponse.from_dict(d).hourly
         result = precipitation_type(hourly)
         for v in result.values():
@@ -232,4 +228,4 @@ class TestComputeAll:
             assert agg.total_precipitation >= 0.0
             assert 0.0 <= agg.dominant_wind_direction < 360.0
             assert agg.sunshine_hours >= 0.0
-            assert agg.precipitation_type in ("none","rain","snow","mixed")
+            assert agg.precipitation_type in ("none", "rain", "snow", "mixed")

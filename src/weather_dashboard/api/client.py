@@ -50,7 +50,8 @@ from weather_dashboard.api.models import (
     WeatherAPIError,
     WeatherClientError,
 )
-from weather_dashboard.config import AppConfig, config as default_config
+from weather_dashboard.config import AppConfig
+from weather_dashboard.config import config as default_config
 
 logger = logging.getLogger(__name__)
 
@@ -58,13 +59,13 @@ logger = logging.getLogger(__name__)
 # TTL-константы (секунды) — единственный SSOT для TTL
 # ---------------------------------------------------------------------------
 _TTL: dict[str, int] = {
-    "current": 5 * 60,           # 5 мин
-    "hourly_24h": 30 * 60,       # 30 мин
-    "daily_7d": 3 * 60 * 60,     # 3 ч
-    "daily_16d": 6 * 60 * 60,    # 6 ч
+    "current": 5 * 60,  # 5 мин
+    "hourly_24h": 30 * 60,  # 30 мин
+    "daily_7d": 3 * 60 * 60,  # 3 ч
+    "daily_16d": 6 * 60 * 60,  # 6 ч
     "geocoding": 7 * 24 * 60 * 60,  # 7 дней
-    "elevation": 0,               # ∞ — 0 означает "никогда не истекает"
-    "air_quality": 60 * 60,       # 1 ч
+    "elevation": 0,  # ∞ — 0 означает "никогда не истекает"
+    "air_quality": 60 * 60,  # 1 ч
 }
 _ELEVATION_NEVER_EXPIRES = True
 
@@ -127,9 +128,13 @@ def _read_cache(
             return payload
         age = time.time() - cached_at
         if age < ttl_seconds:
-            logger.info("Кеш-хит (возраст %.0fs / TTL %ss): %s", age, ttl_seconds, path.name)
+            logger.info(
+                "Кеш-хит (возраст %.0fs / TTL %ss): %s", age, ttl_seconds, path.name
+            )
             return payload
-        logger.debug("Кеш устарел (возраст %.0fs / TTL %ss): %s", age, ttl_seconds, path.name)
+        logger.debug(
+            "Кеш устарел (возраст %.0fs / TTL %ss): %s", age, ttl_seconds, path.name
+        )
     except (json.JSONDecodeError, KeyError, OSError) as exc:
         logger.debug("Ошибка чтения кеша %s: %s", path.name, exc)
     return None
@@ -277,7 +282,9 @@ class WeatherClient:
 
             if resp.status_code == 429:
                 retry_after = resp.headers.get("Retry-After")
-                logger.warning("HTTP 429 Too Many Requests. Retry-After: %s", retry_after)
+                logger.warning(
+                    "HTTP 429 Too Many Requests. Retry-After: %s", retry_after
+                )
                 raise httpx.HTTPStatusError("429", request=resp.request, response=resp)
 
             if resp.status_code >= 500:
@@ -309,7 +316,9 @@ class WeatherClient:
         except httpx.TransportError as exc:  # ← теперь ловим здесь, после retry
             stale = _read_cache(path, 0, never_expires=True)
             if stale is not None:
-                logger.warning("API недоступен, используется устаревший кеш: %s", path.name)
+                logger.warning(
+                    "API недоступен, используется устаревший кеш: %s", path.name
+                )
                 return stale
             raise WeatherClientError(
                 f"Сетевая ошибка при запросе {url}: {exc}", original=exc
@@ -417,9 +426,7 @@ class WeatherClient:
             WeatherClientError: При сетевых ошибках.
         """
         if len(name.strip()) < 2:
-            raise ValueError(
-                "Название города должно содержать минимум 2 символа"
-            )
+            raise ValueError("Название города должно содержать минимум 2 символа")
 
         params: dict[str, Any] = {
             "name": name.strip(),

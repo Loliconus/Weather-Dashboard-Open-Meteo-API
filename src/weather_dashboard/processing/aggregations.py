@@ -16,8 +16,8 @@ from __future__ import annotations
 import itertools
 import math
 import warnings
+from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Iterator
 
 from weather_dashboard.api.models import HourlyForecast
 
@@ -162,9 +162,7 @@ def total_precipitation(hourly: HourlyForecast) -> dict[str, float]:
     result: dict[str, float] = {}
 
     for date, indices in _day_slices(hourly):
-        daily_sum = sum(
-            _safe_float(hourly.precipitation[i]) for i in indices
-        )
+        daily_sum = sum(_safe_float(hourly.precipitation[i]) for i in indices)
         result[date] = float(daily_sum)
 
     return result

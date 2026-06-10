@@ -158,7 +158,7 @@ def wind_chill(t_celsius: float, v_ms: float) -> float:
         return t_celsius
 
     v_kmh = v_ms * 3.6
-    v_pow = v_kmh ** 0.16
+    v_pow = v_kmh**0.16
 
     return 13.12 + 0.6215 * t_celsius - 11.37 * v_pow + 0.3965 * t_celsius * v_pow
 
@@ -310,7 +310,14 @@ def uv_risk_level(
 # ---------------------------------------------------------------------------
 def aqi_category_eu(
     european_aqi: float,
-) -> Literal["Хороший", "Удовлетворительный", "Умеренный", "Плохой", "Очень плохой", "Крайне плохой"]:
+) -> Literal[
+    "Хороший",
+    "Удовлетворительный",
+    "Умеренный",
+    "Плохой",
+    "Очень плохой",
+    "Крайне плохой",
+]:
     """Определяет категорию качества воздуха по европейскому индексу EAQI.
 
     Formula:
@@ -473,9 +480,7 @@ def weather_trend(t_means: Sequence[float]) -> TrendResult:
     y_mean = sum(t_means) / n
 
     # МНК: числитель и знаменатель для slope
-    ss_xy = sum(
-        (i - x_mean) * (v - y_mean) for i, v in enumerate(t_means)
-    )
+    ss_xy = sum((i - x_mean) * (v - y_mean) for i, v in enumerate(t_means))
     ss_xx = sum((i - x_mean) ** 2 for i in range(n))
 
     if ss_xx == 0.0:
@@ -491,7 +496,7 @@ def weather_trend(t_means: Sequence[float]) -> TrendResult:
         if ss_yy == 0.0:
             r2 = 0.0
         else:
-            r2 = (ss_xy ** 2) / (ss_xx * ss_yy)
+            r2 = (ss_xy**2) / (ss_xx * ss_yy)
 
     # Классификация тренда
     if abs(slope) < 0.1:
@@ -602,6 +607,7 @@ def comfort_score(
         uv_sub=uv_sub,
         precip_sub=precip_sub,
     )
+
 
 # ---------------------------------------------------------------------------
 # Frost Risk

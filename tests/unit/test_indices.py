@@ -22,10 +22,10 @@ from weather_dashboard.processing.indices import (
     wind_chill,
 )
 
-
 # ═══════════════════════════════════════════════════════════════════════════
 # Heat Index
 # ═══════════════════════════════════════════════════════════════════════════
+
 
 class TestHeatIndex:
     def test_not_applicable_returns_t(self):
@@ -68,9 +68,9 @@ class TestHeatIndex:
         assert result >= t - 0.01
 
     @given(
-    t=st.floats(-30.0, 60.0, allow_nan=False, allow_infinity=False),
-    rh=st.floats(0.0, 100.0, allow_nan=False, allow_infinity=False),
-)
+        t=st.floats(-30.0, 60.0, allow_nan=False, allow_infinity=False),
+        rh=st.floats(0.0, 100.0, allow_nan=False, allow_infinity=False),
+    )
     @settings(max_examples=300)
     def test_hypothesis_range(self, t, rh):
         """Инварианты heat_index при физически допустимых входах:
@@ -85,7 +85,7 @@ class TestHeatIndex:
 
         # Результат всегда конечный float
         assert isinstance(result, float)
-        assert not (result != result)        # not NaN
+        assert not (result != result)  # not NaN
         assert result != float("inf")
 
         # При неприменимых условиях — возврат исходной температуры
@@ -95,18 +95,18 @@ class TestHeatIndex:
             )
         else:
             # При применимых условиях HI ≥ T (эффект перегрева)
-            assert result >= t - 0.01, (
-                f"heat_index({t}, {rh}) = {result} < t={t}"
-            )
+            assert result >= t - 0.01, f"heat_index({t}, {rh}) = {result} < t={t}"
+
 
 # ═══════════════════════════════════════════════════════════════════════════
 # Wind Chill
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 class TestWindChill:
     def test_not_applicable_returns_t(self):
-        assert wind_chill(15.0, 5.0) == 15.0   # T > 10
-        assert wind_chill(5.0, 0.5)  == 5.0    # V < 1.3
+        assert wind_chill(15.0, 5.0) == 15.0  # T > 10
+        assert wind_chill(5.0, 0.5) == 5.0  # V < 1.3
 
     def test_kat_minus10_10ms(self):
         """wind_chill(-10, 10) ≈ -20°C (Environment Canada)."""
@@ -135,6 +135,7 @@ class TestWindChill:
 # ═══════════════════════════════════════════════════════════════════════════
 # Dew Point
 # ═══════════════════════════════════════════════════════════════════════════
+
 
 class TestDewPoint:
     def test_kat_20_60(self):
@@ -174,6 +175,7 @@ class TestDewPoint:
 # Humidex
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 class TestHumidex:
     def test_kat_30_22(self):
         """humidex(30, 22) ≈ 37°C (MSC)."""
@@ -204,19 +206,23 @@ class TestHumidex:
 # UV Risk Level
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 class TestUVRiskLevel:
-    @pytest.mark.parametrize("uv,expected", [
-        (0.0,  "Низкий"),
-        (2.0,  "Низкий"),
-        (3.0,  "Умеренный"),
-        (5.0,  "Умеренный"),
-        (6.0,  "Высокий"),
-        (7.0,  "Высокий"),
-        (8.0,  "Очень высокий"),
-        (10.0, "Очень высокий"),
-        (11.0, "Экстремальный"),
-        (15.0, "Экстремальный"),
-    ])
+    @pytest.mark.parametrize(
+        "uv,expected",
+        [
+            (0.0, "Низкий"),
+            (2.0, "Низкий"),
+            (3.0, "Умеренный"),
+            (5.0, "Умеренный"),
+            (6.0, "Высокий"),
+            (7.0, "Высокий"),
+            (8.0, "Очень высокий"),
+            (10.0, "Очень высокий"),
+            (11.0, "Экстремальный"),
+            (15.0, "Экстремальный"),
+        ],
+    )
     def test_kat(self, uv, expected):
         assert uv_risk_level(uv) == expected
 
@@ -235,21 +241,25 @@ class TestUVRiskLevel:
 # AQI Category EU
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 class TestAQICategoryEU:
-    @pytest.mark.parametrize("aqi,expected", [
-        (0.0,   "Хороший"),
-        (20.0,  "Хороший"),
-        (21.0,  "Удовлетворительный"),
-        (40.0,  "Удовлетворительный"),
-        (41.0,  "Умеренный"),
-        (60.0,  "Умеренный"),
-        (61.0,  "Плохой"),
-        (80.0,  "Плохой"),
-        (81.0,  "Очень плохой"),
-        (100.0, "Очень плохой"),
-        (101.0, "Крайне плохой"),
-        (200.0, "Крайне плохой"),
-    ])
+    @pytest.mark.parametrize(
+        "aqi,expected",
+        [
+            (0.0, "Хороший"),
+            (20.0, "Хороший"),
+            (21.0, "Удовлетворительный"),
+            (40.0, "Удовлетворительный"),
+            (41.0, "Умеренный"),
+            (60.0, "Умеренный"),
+            (61.0, "Плохой"),
+            (80.0, "Плохой"),
+            (81.0, "Очень плохой"),
+            (100.0, "Очень плохой"),
+            (101.0, "Крайне плохой"),
+            (200.0, "Крайне плохой"),
+        ],
+    )
     def test_kat(self, aqi, expected):
         assert aqi_category_eu(aqi) == expected
 
@@ -262,19 +272,23 @@ class TestAQICategoryEU:
 # Precipitation Intensity
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 class TestPrecipitationIntensity:
-    @pytest.mark.parametrize("mm,expected", [
-        (0.0,   "Следы"),
-        (0.4,   "Следы"),
-        (0.5,   "Слабые"),
-        (2.5,   "Слабые"),
-        (2.6,   "Умеренные"),
-        (7.5,   "Умеренные"),
-        (7.6,   "Сильные"),
-        (50.0,  "Сильные"),
-        (50.1,  "Ливневые"),
-        (100.0, "Ливневые"),
-    ])
+    @pytest.mark.parametrize(
+        "mm,expected",
+        [
+            (0.0, "Следы"),
+            (0.4, "Следы"),
+            (0.5, "Слабые"),
+            (2.5, "Слабые"),
+            (2.6, "Умеренные"),
+            (7.5, "Умеренные"),
+            (7.6, "Сильные"),
+            (50.0, "Сильные"),
+            (50.1, "Ливневые"),
+            (100.0, "Ливневые"),
+        ],
+    )
     def test_kat(self, mm, expected):
         assert precipitation_intensity(mm) == expected
 
@@ -290,6 +304,7 @@ class TestPrecipitationIntensity:
 # ═══════════════════════════════════════════════════════════════════════════
 # Weather Trend
 # ═══════════════════════════════════════════════════════════════════════════
+
 
 class TestWeatherTrend:
     def test_kat_warming(self):
@@ -335,7 +350,8 @@ class TestWeatherTrend:
     @given(
         st.lists(
             st.floats(-30.0, 40.0, allow_nan=False, allow_infinity=False),
-            min_size=2, max_size=16,
+            min_size=2,
+            max_size=16,
         )
     )
     @settings(max_examples=300)
@@ -350,6 +366,7 @@ class TestWeatherTrend:
 # ═══════════════════════════════════════════════════════════════════════════
 # Comfort Score
 # ═══════════════════════════════════════════════════════════════════════════
+
 
 class TestComfortScore:
     def test_kat_ideal(self):
@@ -388,13 +405,13 @@ class TestComfortScore:
     def test_temp_sub_zero_at_extremes(self):
         """temp_sub должен быть 0 при T=-20°C и T=42°C."""
         r_cold = comfort_score(-20.0, 50.0, 2.0, 0.0, 0.0)
-        r_hot  = comfort_score(42.0,  50.0, 2.0, 0.0, 0.0)
+        r_hot = comfort_score(42.0, 50.0, 2.0, 0.0, 0.0)
         assert r_cold["temp_sub"] == 0.0
-        assert r_hot["temp_sub"]  == 0.0
+        assert r_hot["temp_sub"] == 0.0
 
     def test_humidity_sub_zero_at_extremes(self):
         """humidity_sub должен быть 0 при RH=5% и RH=95%."""
-        r_dry = comfort_score(22.0, 5.0,  2.0, 0.0, 0.0)
+        r_dry = comfort_score(22.0, 5.0, 2.0, 0.0, 0.0)
         r_wet = comfort_score(22.0, 95.0, 2.0, 0.0, 0.0)
         assert r_dry["humidity_sub"] == 0.0
         assert r_wet["humidity_sub"] == 0.0
@@ -428,9 +445,11 @@ class TestComfortScore:
         result = comfort_score(t, rh, v, uv, p)
         assert 0.0 <= result["score"] <= 100.0
 
+
 # ═══════════════════════════════════════════════════════════════════════════
 # Frost Risk
 # ═══════════════════════════════════════════════════════════════════════════
+
 
 class TestFrostRisk:
     def test_below_zero(self):
@@ -455,6 +474,7 @@ class TestFrostRisk:
 # ═══════════════════════════════════════════════════════════════════════════
 # High Wind Alert
 # ═══════════════════════════════════════════════════════════════════════════
+
 
 class TestHighWindAlert:
     def test_wind_above_threshold(self):

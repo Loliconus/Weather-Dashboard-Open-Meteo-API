@@ -487,9 +487,7 @@ class AirQualityResponse:
         for key, values in raw_hourly.items():
             if key == "time":
                 continue
-            parsed[key] = [
-                float(v) if v is not None else None for v in values
-            ]
+            parsed[key] = [float(v) if v is not None else None for v in values]
         # Включаем time отдельно
         parsed["time"] = [str(t) for t in raw_hourly.get("time", [])]  # type: ignore[assignment]
 
@@ -531,9 +529,7 @@ class ElevationResponse:
         Returns:
             Экземпляр ElevationResponse.
         """
-        return cls(
-            elevation=[float(v) for v in data.get("elevation", [])]
-        )
+        return cls(elevation=[float(v) for v in data.get("elevation", [])])
 
     def to_dict(self) -> dict[str, Any]:
         """Сериализует в JSON-совместимый словарь."""
@@ -581,6 +577,9 @@ class WeatherClientError(Exception):
         super().__init__(self.message)
 
     def __str__(self) -> str:
-        orig = f" (caused by: {type(self.original).__name__}: {self.original})" \
-               if self.original else ""
+        orig = (
+            f" (caused by: {type(self.original).__name__}: {self.original})"
+            if self.original
+            else ""
+        )
         return f"WeatherClientError: {self.message}{orig}"

@@ -104,9 +104,7 @@ class AppConfig:
     )
 
     # ── Параметры прогноза ──────────────────────────────────────────────
-    FORECAST_DAYS: int = field(
-        default_factory=lambda: _env_int("FORECAST_DAYS", 7)
-    )
+    FORECAST_DAYS: int = field(default_factory=lambda: _env_int("FORECAST_DAYS", 7))
     TEMPERATURE_UNIT: str = field(
         default_factory=lambda: _env_str("TEMPERATURE_UNIT", "celsius")
     )
@@ -115,17 +113,11 @@ class AppConfig:
     )
 
     # ── Пути ────────────────────────────────────────────────────────────
-    CACHE_DIR: Path = field(
-        default_factory=lambda: _env_path("CACHE_DIR", ".cache")
-    )
-    OUTPUT_DIR: Path = field(
-        default_factory=lambda: _env_path("OUTPUT_DIR", "docs")
-    )
+    CACHE_DIR: Path = field(default_factory=lambda: _env_path("CACHE_DIR", ".cache"))
+    OUTPUT_DIR: Path = field(default_factory=lambda: _env_path("OUTPUT_DIR", "docs"))
 
     # ── Логирование ─────────────────────────────────────────────────────
-    LOG_LEVEL: str = field(
-        default_factory=lambda: _env_str("LOG_LEVEL", "INFO")
-    )
+    LOG_LEVEL: str = field(default_factory=lambda: _env_str("LOG_LEVEL", "INFO"))
 
     # ── Snapshot-локации (CI) ───────────────────────────────────────────
     SNAPSHOT_LOCATIONS: list[dict[str, object]] = field(

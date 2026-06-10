@@ -60,7 +60,7 @@ class TestValidateTemperature:
     def test_normal_no_warning(self):
         with warnings.catch_warnings():
             warnings.simplefilter("error")
-            validate_temperature(22.5)   # не предупреждает
+            validate_temperature(22.5)  # не предупреждает
 
     def test_extreme_low_warns(self):
         with pytest.warns(UserWarning, match="правдоподобный"):
@@ -78,8 +78,8 @@ class TestValidateTemperature:
 
     def test_no_exception_raised(self):
         """validate_temperature никогда не бросает ValueError."""
-        validate_temperature(-200.0)   # только warn
-        validate_temperature(1000.0)   # только warn
+        validate_temperature(-200.0)  # только warn
+        validate_temperature(1000.0)  # только warn
 
 
 class TestValidateHumidity:

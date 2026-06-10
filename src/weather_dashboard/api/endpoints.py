@@ -10,7 +10,6 @@ from __future__ import annotations
 
 from enum import StrEnum
 
-
 # ---------------------------------------------------------------------------
 # URL-константы (дублируют config.py — для статических проверок / тестов)
 # ---------------------------------------------------------------------------
@@ -26,10 +25,10 @@ ELEVATION_URL: str = "https://api.open-meteo.com/v1/elevation"
 class WindUnit(StrEnum):
     """Единицы скорости ветра Open-Meteo API."""
 
-    MS = "ms"       # м/с (дефолт для РФ-рынка)
-    KMH = "kmh"     # км/ч
-    MPH = "mph"     # мили/час
-    KN = "kn"       # узлы
+    MS = "ms"  # м/с (дефолт для РФ-рынка)
+    KMH = "kmh"  # км/ч
+    MPH = "mph"  # мили/час
+    KN = "kn"  # узлы
 
 
 class TempUnit(StrEnum):
