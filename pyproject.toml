@@ -69,14 +69,33 @@ select = [
     "B",   # flake8-bugbear
     "RUF", # ruff-specific
 ]
+
 ignore = [
-    "ANN101",  # missing type annotation for `self`
-    "ANN102",  # missing type annotation for `cls`
-    "S101",    # use of assert (допустимо в тестах)
+    "E501",  # line-length контролирует formatter; в lint дублировать не нужно
+    "N806",  # временно: _THRESHOLD в sunshine_hours (убрать после рефакторинга)
+]
+
+# ru-RU проект: кириллица в docstring/comment/string — это норма.
+# allowed-confusables подавляет только RUF001/002/003 для конкретных символов,
+# не отключая проверку в целом — это точнее, чем ignore = ["RUF001","RUF002","RUF003"].
+allowed-confusables = [
+    # Кириллица, визуально схожая с латиницей (триггерит RUF001/002/003):
+    "А", "В", "Е", "З", "К", "М", "Н", "О", "Р", "С", "Т", "Х",
+    "а", "б", "в", "г", "е", "з", "к", "м", "н", "о", "р", "с", "т", "у", "х",
+    # Типографика в диапазонах и тексте:
+    "–", "—",
+    # Символы формул в docstring:
+    "α", "β", "γ",
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S101", "ANN", "S311"]
+"tests/**/*.py" = [
+    "S101",   # assert разрешён в тестах
+    "ANN",    # аннотации в тестах необязательны
+    "S311",   # pseudo-random допустим в тестах
+    "B007",   # неиспользуемая переменная цикла
+    "RUF043", # pytest.raises(match=...) — regex-метасимволы
+]
 
 [tool.ruff.format]
 quote-style = "double"
