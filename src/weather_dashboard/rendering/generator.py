@@ -9,11 +9,11 @@
 
 from __future__ import annotations
 
-import sys
 import asyncio
 import json
 import logging
 import re
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
