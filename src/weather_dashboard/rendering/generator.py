@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import sys
 import asyncio
 import json
 import logging
@@ -613,7 +614,7 @@ def main() -> None:
     """Синхронная точка входа для python -m weather_dashboard.rendering.generator."""
     success = asyncio.run(generate())
     if not success:
-        main.exit(1)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
