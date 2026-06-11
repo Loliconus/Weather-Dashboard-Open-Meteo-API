@@ -469,7 +469,7 @@ def _make_jinja_env() -> Environment:
 # ---------------------------------------------------------------------------
 # Главная функция генератора
 # ---------------------------------------------------------------------------
-async def generate(cfg: AppConfig = default_config) -> None:
+async def generate(cfg: AppConfig = default_config) -> bool:
     """Оркестрирует полный пайплайн генерации статики.
 
     Для каждой локации из cfg.SNAPSHOT_LOCATIONS:
@@ -514,7 +514,7 @@ async def generate(cfg: AppConfig = default_config) -> None:
 
     if not location_contexts:
         logger.error("Нет данных ни для одной локации. Генерация прервана.")
-        return
+        return False
 
     # ── Рендеринг ────────────────────────────────────────────────────────
     cfg.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -548,6 +548,7 @@ async def generate(cfg: AppConfig = default_config) -> None:
         "Генерация завершена. Файлы: %s",
         [str(p) for p in cfg.OUTPUT_DIR.rglob("*.html")],
     )
+    return True
 
 
 def _render_template(
@@ -610,8 +611,9 @@ def _write_data_js(
 # ---------------------------------------------------------------------------
 def main() -> None:
     """Синхронная точка входа для python -m weather_dashboard.rendering.generator."""
-    asyncio.run(generate())
-
+    success = asyncio.run(generate())
+    if not success:
+        main.exit(1)
 
 if __name__ == "__main__":
     main()

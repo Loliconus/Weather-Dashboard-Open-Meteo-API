@@ -80,6 +80,14 @@ jobs:
             --cov-report=term-missing \
             --cov-fail-under=80 \
             -q
+        # ── Кэш ──────
+      - name: Restore API cache
+        uses: actions/cache@v4
+        with:
+          path: .cache/
+          key: api-cache-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            api-cache-${{ runner.os }}-
 
       # ── 6. Генерация snapshot ──────────────────────────────────────────
       - name: Generate snapshot (Snapshot mode)
