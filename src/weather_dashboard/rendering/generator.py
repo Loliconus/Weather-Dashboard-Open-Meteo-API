@@ -615,5 +615,6 @@ def main() -> None:
     if not success:
         main.exit(1)
 
+
 if __name__ == "__main__":
     main()
