@@ -18,7 +18,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 /** Переключатель режимов. false → Snapshot mode (data.js) */
-const USE_LIVE = true;
+const USE_LIVE = false;
 
 const API = {
   FORECAST:    "https://api.open-meteo.com/v1/forecast",
