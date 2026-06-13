@@ -606,8 +606,10 @@
 ════════════════════════════════════════════════════════════════════════════ #}
 <script>
   // Данные, инжектированные сервером (Snapshot mode fallback)
-  const SERVER_DATA = {{ locations | tojson }};
-  const GENERATED_AT = {{ generated_at | tojson }};
+  const WEATHER_SNAPSHOT = {
+    generated_at: {{ generated_at | tojson }},
+    locations:    {{ locations | tojson }},
+  };
 </script>
 
 {# Chart.js с SRI #}

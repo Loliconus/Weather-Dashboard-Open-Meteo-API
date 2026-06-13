@@ -529,10 +529,13 @@ async def generate(cfg: AppConfig = default_config) -> bool:
     # Общий контекст для всех шаблонов
     from weather_dashboard import __version__
 
+    _dt = datetime.fromisoformat(generated_at)
+
     base_ctx: dict[str, Any] = {
         "locations": location_contexts,
         "default_location": location_contexts[0],
         "generated_at": generated_at,
+        "generated_at_human": _dt.strftime("%-d.%-m.%Y %H:%M") + " UTC",
         "version": __version__,
         "repo_url": ("https://github.com/Loliconus/Weather-Dashboard-Open-Meteo-API"),
         "author": "Loliconus",

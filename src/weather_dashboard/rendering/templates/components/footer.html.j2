@@ -3,22 +3,23 @@
   <div class="footer__inner">
     <p class="footer__attribution">
       Данные погоды:
-      <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">
-        Open-Meteo.com
-      </a>
+      <a href="https://open-meteo.com/"
+         target="_blank" rel="noopener noreferrer">Open-Meteo.com</a>
       <span class="footer__license">(CC BY 4.0)</span>
     </p>
+
     <p class="footer__snapshot">
-      Последнее обновление снимка:
+      Снимок данных:
+      {# datetime= для семантики, текст — человекочитаемый из Python #}
       <time id="snapshot-time" datetime="{{ generated_at }}">
-        {{ generated_at }}
+        {{ generated_at_human }}
       </time>
     </p>
+
     <p class="footer__version">
-      Версия {{ version }} ·
-      <a href="{{ repo_url }}" target="_blank" rel="noopener noreferrer">
-        {{ author }}
-      </a>
+      v{{ version }} ·
+      <a href="{{ repo_url }}"
+         target="_blank" rel="noopener noreferrer">{{ author }}</a>
     </p>
   </div>
 </footer>
