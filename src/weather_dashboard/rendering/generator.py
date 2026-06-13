@@ -427,6 +427,8 @@ def _make_jinja_env() -> Environment:
         lstrip_blocks=True,
         keep_trailing_newline=True,
     )
+    
+    env.globals["_WMO_SVG"] = _WMO_SVG
 
     # Фильтры
     def ru_number(value: float | None, decimals: int = 1) -> str:
