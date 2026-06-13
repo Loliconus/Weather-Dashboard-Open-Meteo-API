@@ -19,66 +19,11 @@
       <span class="header__logo-text">Weather Dashboard</span>
     </a>
 
-    {# Поиск города (Live mode) #}
-    <div class="search" role="search" aria-label="Поиск города">
-      <div class="search__wrapper">
-        <label for="city-search" class="sr-only">Поиск города</label>
-        <input
-          id="city-search"
-          class="search__input"
-          type="search"
-          placeholder="Введите город..."
-          autocomplete="off"
-          autocorrect="off"
-          spellcheck="false"
-          minlength="2"
-          aria-autocomplete="list"
-          aria-controls="search-results"
-          aria-expanded="false"
-        >
-        <button
-          class="search__geo-btn"
-          id="geo-btn"
-          type="button"
-          title="Определить местоположение"
-          aria-label="Определить местоположение автоматически"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-               width="20" height="20" aria-hidden="true">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83
-                     M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
-          </svg>
-        </button>
-      </div>
-      <ul
-        id="search-results"
-        class="search__dropdown"
-        role="listbox"
-        aria-label="Результаты поиска"
-        hidden
-      ></ul>
-    </div>
-
-    <nav class="header__nav" aria-label="Навигация">
+    <nav class="header__nav" aria-label="Навигация" style="margin-left:auto">
       <a href="index.html" class="header__nav-link header__nav-link--active"
          aria-current="page">Погода</a>
       <a href="about.html" class="header__nav-link">О проекте</a>
     </nav>
-  </div>
-
-  {# Баннер устаревшего кеша (управляется JS) #}
-  <div id="stale-banner" class="stale-banner" hidden role="alert" aria-live="polite">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-         width="16" height="16" aria-hidden="true">
-      <circle cx="12" cy="12" r="10"/>
-      <line x1="12" y1="8" x2="12" y2="12"/>
-      <line x1="12" y1="16" x2="12.01" y2="16"/>
-    </svg>
-    Данные от <span id="stale-time"></span> — возможно устарели.
-    <button class="stale-banner__refresh" id="refresh-btn" type="button">
-      Обновить
-    </button>
   </div>
 </header>
 
@@ -613,12 +558,7 @@
 </script>
 
 {# Chart.js с SRI #}
-<script
-  src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"
-  integrity="sha384-S6rHXvv+n/BNMD1WEZdijFJ9uOjgxUeP5eGR7jABnKZfC7k3UoJBIBvYniGnPxL"
-  crossorigin="anonymous"
-  referrerpolicy="no-referrer"
-></script>
+<script src="assets/chart.umd.min.js"></script>
 
 <script src="assets/dashboard.js" defer></script>
 </body>
