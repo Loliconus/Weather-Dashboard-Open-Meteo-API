@@ -4,21 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description"
-        content="Сведения об источниках данных, правовой оговорке и конфиденциальности Weather Dashboard — RedSynthesis" />
+        content="Сведения об источниках данных, правовой оговорке и конфиденциальности Weather Dashboard" />
   <meta name="robots" content="noindex, follow" />
 
-  {# --- CSP: разрешаем только собственный origin + fonts.googleapis.com для иконок --- #}
+  {# CSP: нет внешних запросов из браузера — connect-src 'none' #}
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self';
                  style-src 'self' 'unsafe-inline';
-                 script-src 'self';
+                 script-src 'self' 'unsafe-inline';
                  img-src 'self' data:;
                  font-src 'self';
                  connect-src 'none';" />
 
   <title>Об источниках данных — Weather Dashboard</title>
 
-  {# === INLINE CRITICAL CSS (single-file deploy на GitHub Pages) === #}
   <style>
     /* ─── CSS Custom Properties ─────────────────────────────────────────── */
     :root {
@@ -39,19 +38,19 @@
       --color-cc-badge-bg:  #dbeafe;
       --color-cc-badge-fg:  #1d4ed8;
 
-      --radius-sm:  0.375rem;
-      --radius-md:  0.75rem;
-      --radius-lg:  1rem;
-      --radius-xl:  1.5rem;
+      --radius-sm: 0.375rem;
+      --radius-md: 0.75rem;
+      --radius-lg: 1rem;
+      --radius-xl: 1.5rem;
 
-      --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / .05);
-      --shadow-md:  0 4px 6px -1px rgb(0 0 0 / .1), 0 2px 4px -2px rgb(0 0 0 / .1);
-      --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / .05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / .1), 0 2px 4px -2px rgb(0 0 0 / .1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);
 
       --transition: 200ms cubic-bezier(.4,0,.2,1);
-      --font-sans:  -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-                    "Helvetica Neue", Arial, sans-serif;
-      --font-mono:  "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                   "Helvetica Neue", Arial, sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 
       --max-w: 900px;
     }
@@ -68,12 +67,12 @@
         --color-primary:      #60a5fa;
         --color-primary-dark: #93c5fd;
 
-        --color-cc-badge-bg:  #1e3a5f;
-        --color-cc-badge-fg:  #93c5fd;
+        --color-cc-badge-bg: #1e3a5f;
+        --color-cc-badge-fg: #93c5fd;
 
-        --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / .4);
-        --shadow-md:  0 4px 6px -1px rgb(0 0 0 / .5);
-        --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / .5);
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / .4);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / .5);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / .5);
       }
     }
 
@@ -96,11 +95,16 @@
       text-decoration: none;
       transition: color var(--transition), text-decoration-color var(--transition);
     }
-    a:hover, a:focus-visible {
+    a:hover,
+    a:focus-visible {
       color: var(--color-primary-dark);
       text-decoration: underline;
     }
-    a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 2px; }
+    a:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
 
     /* ─── Skip link ──────────────────────────────────────────────────────── */
     .skip-link {
@@ -145,7 +149,7 @@
       text-decoration: none;
     }
     .site-nav__brand:hover { color: var(--color-primary); text-decoration: none; }
-    .site-nav__brand svg { flex-shrink: 0; }
+    .site-nav__brand svg  { flex-shrink: 0; }
 
     .site-nav__links {
       margin-left: auto;
@@ -176,10 +180,13 @@
       .page-header { background: linear-gradient(135deg, #0f172a 0%, #020617 100%); }
     }
     .page-header__icon {
-      width: 64px; height: 64px;
+      width: 64px;
+      height: 64px;
       background: rgba(255,255,255,.1);
       border-radius: var(--radius-xl);
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       margin: 0 auto 1.25rem;
       backdrop-filter: blur(8px);
     }
@@ -245,7 +252,10 @@
       flex-direction: column;
       gap: .75rem;
     }
-    .attr-card:hover { box-shadow: var(--shadow-md); border-color: var(--color-primary); }
+    .attr-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-primary);
+    }
 
     .attr-card__header {
       display: flex;
@@ -253,23 +263,26 @@
       gap: .875rem;
     }
     .attr-card__logo {
-      width: 44px; height: 44px;
+      width: 44px;
+      height: 44px;
       border-radius: var(--radius-md);
       background: var(--color-surface-alt);
       border: 1px solid var(--color-border);
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
       font-size: 1.5rem;
       line-height: 1;
     }
-    .attr-card__meta { flex: 1; min-width: 0; }
-    .attr-card__name {
+    .attr-card__meta  { flex: 1; min-width: 0; }
+    .attr-card__name  {
       font-size: 1rem;
       font-weight: 700;
       color: var(--color-text);
       margin-bottom: .15rem;
     }
-    .attr-card__role {
+    .attr-card__role  {
       font-size: .8rem;
       color: var(--color-text-muted);
       text-transform: uppercase;
@@ -303,16 +316,18 @@
       font-weight: 600;
       white-space: nowrap;
     }
-    .badge--cc    { background: var(--color-cc-badge-bg); color: var(--color-cc-badge-fg); }
-    .badge--doi   { background: #ecfdf5; color: #065f46; }
-    .badge--doi   { background: #d1fae5; color: #065f46; }
-    .badge--link  { background: var(--color-surface-alt); color: var(--color-text-muted); border: 1px solid var(--color-border); }
+    .badge--cc   { background: var(--color-cc-badge-bg); color: var(--color-cc-badge-fg); }
+    .badge--doi  { background: #d1fae5; color: #065f46; }
+    .badge--link {
+      background: var(--color-surface-alt);
+      color: var(--color-text-muted);
+      border: 1px solid var(--color-border);
+    }
     @media (prefers-color-scheme: dark) {
       .badge--doi  { background: #064e3b; color: #6ee7b7; }
-      .badge--link { background: var(--color-surface-alt); color: var(--color-text-muted); }
     }
 
-    /* ─── Prose cards (Disclaimer / Privacy) ─────────────────────────────── */
+    /* ─── Prose cards ─────────────────────────────────────────────────────── */
     .prose-card {
       background: var(--color-surface);
       border: 1px solid var(--color-border);
@@ -329,21 +344,15 @@
       margin-bottom: 1rem;
     }
     .prose-card__icon-row svg { flex-shrink: 0; }
-    .prose-card__icon-row h3 {
+    .prose-card__icon-row h3  {
       font-size: 1rem;
       font-weight: 700;
       color: var(--color-text);
     }
 
-    .prose-card--warning {
-      border-left: 4px solid var(--color-warning);
-    }
-    .prose-card--info {
-      border-left: 4px solid var(--color-info);
-    }
-    .prose-card--danger {
-      border-left: 4px solid var(--color-danger);
-    }
+    .prose-card--warning { border-left: 4px solid var(--color-warning); }
+    .prose-card--info    { border-left: 4px solid var(--color-info); }
+    .prose-card--success { border-left: 4px solid var(--color-success); }
 
     .prose-card p {
       font-size: .875rem;
@@ -352,7 +361,7 @@
     }
     .prose-card p + p { margin-top: .6rem; }
 
-    /* ─── API Version table ───────────────────────────────────────────────── */
+    /* ─── API table ───────────────────────────────────────────────────────── */
     .api-table-wrap {
       overflow-x: auto;
       border-radius: var(--radius-lg);
@@ -365,9 +374,7 @@
       font-size: .875rem;
       background: var(--color-surface);
     }
-    .api-table thead {
-      background: var(--color-surface-alt);
-    }
+    .api-table thead { background: var(--color-surface-alt); }
     .api-table th {
       padding: .75rem 1rem;
       text-align: left;
@@ -386,7 +393,6 @@
     }
     .api-table tbody tr:last-child td { border-bottom: none; }
     .api-table tbody tr:hover { background: var(--color-surface-alt); }
-
     .api-table code {
       font-family: var(--font-mono);
       font-size: .82rem;
@@ -396,22 +402,46 @@
       border-radius: var(--radius-sm);
     }
 
-    .status-dot {
+    /* Индикатор статуса */
+    .status-badge {
       display: inline-flex;
       align-items: center;
       gap: .35rem;
-      font-size: .8rem;
+      font-size: .78rem;
       font-weight: 600;
+      padding: .15rem .55rem;
+      border-radius: 9999px;
     }
-    .status-dot::before {
+    .status-badge::before {
       content: "";
       display: block;
-      width: 8px; height: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
-      background: var(--color-success);
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-success) 25%, transparent);
-      animation: pulse-dot 2s ease-in-out infinite;
+      flex-shrink: 0;
     }
+
+    /* Зелёный пульс — API активен при сборке */
+    .status-badge--build {
+      background: color-mix(in srgb, var(--color-success) 12%, transparent);
+      color: #15803d;
+    }
+    .status-badge--build::before {
+      background: var(--color-success);
+      animation: pulse-dot 2s ease-in-out infinite;
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-success) 25%, transparent);
+    }
+    @media (prefers-color-scheme: dark) {
+      .status-badge--build { color: #4ade80; }
+    }
+
+    /* Серый — не используется */
+    .status-badge--unused {
+      background: var(--color-surface-alt);
+      color: var(--color-text-subtle);
+    }
+    .status-badge--unused::before { background: var(--color-text-subtle); }
+
     @keyframes pulse-dot {
       0%, 100% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-success) 25%, transparent); }
       50%       { box-shadow: 0 0 0 5px color-mix(in srgb, var(--color-success) 10%, transparent); }
@@ -470,9 +500,7 @@
       color: var(--color-text-muted);
       font-weight: 500;
     }
-    .site-footer__attribution a {
-      font-weight: 700;
-    }
+    .site-footer__attribution a { font-weight: 700; }
     .site-footer__meta {
       font-size: .775rem;
       color: var(--color-text-subtle);
@@ -496,14 +524,20 @@
 
     /* ─── Utility ─────────────────────────────────────────────────────────── */
     .visually-hidden {
-      position: absolute; width: 1px; height: 1px;
-      padding: 0; margin: -1px; overflow: hidden;
-      clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
     }
 
     @media (max-width: 640px) {
-      .site-nav__links { gap: 1rem; }
-      .attr-grid { grid-template-columns: 1fr; }
+      .site-nav__links  { gap: 1rem; }
+      .attr-grid        { grid-template-columns: 1fr; }
       .site-footer__inner { flex-direction: column; align-items: flex-start; }
       .site-footer__right { align-items: flex-start; }
     }
@@ -511,7 +545,6 @@
 </head>
 
 <body>
-  {# ── Skip link ── #}
   <a href="#main-content" class="skip-link">Перейти к содержимому</a>
 
   {# ══════════════════════════════════════════════════════
@@ -519,11 +552,11 @@
   ══════════════════════════════════════════════════════ #}
   <nav class="site-nav" aria-label="Основная навигация">
     <div class="site-nav__inner">
-      <a href="index.html" class="site-nav__brand" aria-label="Weather Dashboard — главная">
-        {# Inline SVG — нет CDN-зависимости #}
+      <a href="index.html" class="site-nav__brand"
+         aria-label="Weather Dashboard — главная">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round"
-             stroke-linejoin="round" aria-hidden="true">
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41
                    M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
           <circle cx="12" cy="12" r="4"/>
@@ -552,7 +585,7 @@
     </div>
     <h1 class="page-header__title">Источники данных и лицензии</h1>
     <p class="page-header__subtitle">
-      Attribution, правовая оговорка и сведения о конфиденциальности
+      Атрибуция, правовая оговорка и сведения о конфиденциальности
     </p>
   </header>
 
@@ -567,8 +600,8 @@
     <section class="section" aria-labelledby="attr-heading">
       <h2 class="section__heading" id="attr-heading">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round"
-             stroke-linejoin="round" aria-hidden="true">
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806
                    3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806
                    3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946
@@ -593,39 +626,27 @@
               <div class="attr-card__role">Прогноз погоды · Текущие данные</div>
             </div>
           </div>
-
           <div class="attr-card__body">
             <p>
-              Данные о прогнозе погоды, текущих метеоусловиях и почасовых/суточных
+              Данные о прогнозе погоды, текущих метеоусловиях, почасовых и суточных
               переменных предоставлены сервисом
-              <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">
-                open-meteo.com
-              </a>.
+              <a href="https://open-meteo.com/"
+                 target="_blank" rel="noopener noreferrer">open-meteo.com</a>.
               Open-Meteo — открытый API погоды с открытым исходным кодом, не требующий
               ключа API для некоммерческого использования.
             </p>
             <p>
-              Модели прогноза включают: ECMWF IFS/AIFS, DWD ICON, NCEP GFS, Météo-France
-              ARPEGE, Environment Canada GEM, MeteoSwiss ICON-CH и другие региональные
-              NWP-модели.
+              Модели прогноза включают: ECMWF IFS/AIFS, DWD ICON, NCEP GFS,
+              Météo-France ARPEGE, Environment Canada GEM, MeteoSwiss ICON-CH
+              и другие региональные NWP-модели.
             </p>
             <p>
-              API-интерфейс предоставляется «как есть». Open-Meteo не несёт
-              ответственности за точность данных и не предоставляет гарантий
-              применительно к конкретным целям использования.
+              Данные запрашиваются во время сборки (GitHub Actions) и сохраняются
+              как статический снимок. Браузер не обращается к серверам Open-Meteo.
             </p>
           </div>
-
           <div class="attr-card__footer">
-            <span class="badge badge--cc">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"
-                   aria-hidden="true">
-                <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477
-                         10-10S17.523 2 12 2zm0 18a8 8 0 110-16 8 8 0 010
-                         16zm-1-11h2v6h-2zm0-4h2v2h-2z"/>
-              </svg>
-              CC BY 4.0
-            </span>
+            <span class="badge badge--cc">CC BY 4.0</span>
             <a href="https://open-meteo.com/en/license"
                target="_blank" rel="noopener noreferrer"
                class="badge badge--link"
@@ -641,43 +662,6 @@
           </div>
         </article>
 
-        {# ── GeoNames ── #}
-        <article class="attr-card" aria-labelledby="attr-geonames-name">
-          <div class="attr-card__header">
-            <div class="attr-card__logo" aria-hidden="true">🗺️</div>
-            <div class="attr-card__meta">
-              <div class="attr-card__name" id="attr-geonames-name">GeoNames</div>
-              <div class="attr-card__role">Геокодирование · Поиск городов</div>
-            </div>
-          </div>
-
-          <div class="attr-card__body">
-            <p>
-              Данные геокодирования (поиск населённых пунктов по названию, координаты,
-              административные деления) предоставлены базой географических названий
-              <a href="https://www.geonames.org/" target="_blank" rel="noopener noreferrer">
-                geonames.org
-              </a>.
-              GeoNames агрегирует официальные данные из национальных геодезических служб
-              более 250 стран и территорий.
-            </p>
-            <p>
-              Поиск городов осуществляется через Geocoding API сервиса Open-Meteo,
-              который использует GeoNames в качестве первичного источника.
-            </p>
-          </div>
-
-          <div class="attr-card__footer">
-            <span class="badge badge--cc">CC BY 4.0</span>
-            <a href="https://www.geonames.org/about.html"
-               target="_blank" rel="noopener noreferrer"
-               class="badge badge--link"
-               aria-label="О базе GeoNames (новая вкладка)">
-              О проекте ↗
-            </a>
-          </div>
-        </article>
-
         {# ── Copernicus DEM GLO-90 ── #}
         <article class="attr-card" aria-labelledby="attr-dem-name">
           <div class="attr-card__header">
@@ -687,26 +671,22 @@
               <div class="attr-card__role">Цифровая модель рельефа · Высота</div>
             </div>
           </div>
-
           <div class="attr-card__body">
             <p>
               Данные о высоте местности над уровнем моря получены из
               <a href="https://spacedata.copernicus.eu/collections/copernicus-digital-elevation-model"
                  target="_blank" rel="noopener noreferrer">
-                Copernicus Digital Elevation Model (DEM) GLO-90
+                Copernicus DEM GLO-90
               </a>
-              — глобальной цифровой модели рельефа с разрешением 90&nbsp;м.
-              Данные предоставлены Европейским космическим агентством (ESA) по программе
-              Copernicus.
+              — глобальной цифровой модели рельефа с разрешением 90&nbsp;м,
+              предоставленной Европейским космическим агентством (ESA) в рамках
+              программы Copernicus.
             </p>
             <p>
-              Данные DEM предоставляются по
-              <a href="https://spacedata.copernicus.eu/en/web/guest/collections/copernicus-digital-elevation-model/-/asset_publisher/default/content/copernicus-dem-licence"
-                 target="_blank" rel="noopener noreferrer">лицензии Copernicus</a>
-              и доступны через Elevation API Open-Meteo.
+              Доступ к данным осуществляется через Elevation API Open-Meteo при
+              сборке проекта.
             </p>
           </div>
-
           <div class="attr-card__footer">
             <a href="https://doi.org/10.5270/ESA-c5d3d65"
                target="_blank" rel="noopener noreferrer"
@@ -732,28 +712,24 @@
               <div class="attr-card__role">Качество воздуха · AQI · Аэрозоли</div>
             </div>
           </div>
-
           <div class="attr-card__body">
             <p>
-              Данные о качестве воздуха (PM2.5, PM10, NO₂, O₃, CO, European AQI, US AQI)
+              Данные о качестве воздуха (PM2.5, PM10, NO₂, O₃, CO, European AQI)
               предоставлены
               <a href="https://atmosphere.copernicus.eu/"
                  target="_blank" rel="noopener noreferrer">
                 Copernicus Atmosphere Monitoring Service (CAMS)
               </a>
-              — компонентом программы Copernicus ЕС, реализуемым
-              Европейским центром среднесрочных прогнозов погоды (ECMWF).
+              — компонентом программы Copernicus ЕС, реализуемым ECMWF.
             </p>
             <p>
-              Данные CAMS предоставляются бесплатно и открыто в соответствии с
+              При использовании данных обязательна ссылка на CAMS согласно
               <a href="https://atmosphere.copernicus.eu/how-cite-or-acknowledge-copernicus-atmosphere-monitoring-service"
                  target="_blank" rel="noopener noreferrer">
-                условиями атрибуции Copernicus
+                условиям атрибуции Copernicus
               </a>.
-              Обязательна ссылка на CAMS при использовании данных.
             </p>
           </div>
-
           <div class="attr-card__footer">
             <span class="badge badge--cc">Copernicus License</span>
             <a href="https://atmosphere.copernicus.eu/data"
@@ -775,13 +751,15 @@
     </section>
 
     {# ─────────────────────────────────────────────────────
-       § 2  ИСПОЛЬЗУЕМЫЕ API
+       § 2  API-ЭНДПОИНТЫ
+       Все запросы выполняются Python-пайплайном при сборке.
+       Браузер к этим URL не обращается.
     ───────────────────────────────────────────────────── #}
     <section class="section" aria-labelledby="api-heading">
       <h2 class="section__heading" id="api-heading">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round"
-             stroke-linejoin="round" aria-hidden="true">
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polyline points="16 18 22 12 16 6"/>
           <polyline points="8 6 2 12 8 18"/>
         </svg>
@@ -790,44 +768,41 @@
 
       <div class="api-table-wrap" role="region" aria-label="Таблица используемых API">
         <table class="api-table">
-          <caption class="visually-hidden">Список API-эндпоинтов, версии и назначение</caption>
+          <caption class="visually-hidden">
+            Список API-эндпоинтов, их назначение и статус использования при сборке
+          </caption>
           <thead>
             <tr>
               <th scope="col">Эндпоинт</th>
               <th scope="col">Base URL</th>
-              <th scope="col">Версия</th>
               <th scope="col">Назначение</th>
-              <th scope="col">Статус</th>
+              <th scope="col">Вызывается</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td><strong>Forecast</strong></td>
               <td><code>api.open-meteo.com/v1/forecast</code></td>
-              <td><code>v1</code></td>
               <td>Прогноз погоды: current / hourly / daily</td>
-              <td><span class="status-dot">В работе</span></td>
-            </tr>
-            <tr>
-              <td><strong>Geocoding</strong></td>
-              <td><code>geocoding-api.open-meteo.com/v1/search</code></td>
-              <td><code>v1</code></td>
-              <td>Поиск населённых пунктов по названию</td>
-              <td><span class="status-dot">В работе</span></td>
+              <td><span class="status-badge status-badge--build">При сборке</span></td>
             </tr>
             <tr>
               <td><strong>Air Quality</strong></td>
               <td><code>air-quality-api.open-meteo.com/v1/air-quality</code></td>
-              <td><code>v1</code></td>
               <td>PM2.5, PM10, AQI, газы (CAMS)</td>
-              <td><span class="status-dot">В работе</span></td>
+              <td><span class="status-badge status-badge--build">При сборке</span></td>
             </tr>
             <tr>
               <td><strong>Elevation</strong></td>
               <td><code>api.open-meteo.com/v1/elevation</code></td>
-              <td><code>v1</code></td>
               <td>Высота над уровнем моря (DEM GLO-90)</td>
-              <td><span class="status-dot">В работе</span></td>
+              <td><span class="status-badge status-badge--build">При сборке</span></td>
+            </tr>
+            <tr>
+              <td><strong>Geocoding</strong></td>
+              <td><code>geocoding-api.open-meteo.com/v1/search</code></td>
+              <td>Поиск населённых пунктов по названию</td>
+              <td><span class="status-badge status-badge--unused">Не используется</span></td>
             </tr>
           </tbody>
         </table>
@@ -840,8 +815,8 @@
     <section class="section" aria-labelledby="disclaimer-heading">
       <h2 class="section__heading" id="disclaimer-heading">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round"
-             stroke-linejoin="round" aria-hidden="true">
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0
                    001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
           <line x1="12" y1="9" x2="12" y2="13"/>
@@ -864,53 +839,45 @@
         </div>
         <p>
           Все метеорологические данные, расчётные индексы и прогнозы предоставляются
-          исключительно в информационных целях и без каких-либо гарантий — явных или
+          исключительно в информационных целях без каких-либо гарантий — явных или
           подразумеваемых — относительно их точности, полноты, актуальности или
           пригодности для конкретных целей.
         </p>
         <p>
           <strong>Open-Meteo не гарантирует точность прогнозных данных.</strong>
           Качество прогнозов существенно снижается за пределами 5–7 суток. Данные
-          получены из числовых моделей атмосферы сторонних метеослужб (ECMWF, DWD,
-          NCEP и др.) и могут содержать ошибки ассимиляции, пробелы и артефакты.
+          получены из числовых моделей атмосферы (ECMWF, DWD, NCEP и др.) и могут
+          содержать ошибки ассимиляции, пробелы и артефакты.
         </p>
         <p>
           Расчётные индексы (Heat Index, Wind Chill, Humidex, AQI и др.) носят
           <strong>ориентировочный характер</strong>. Для ответственных решений
-          — в сфере здравоохранения, авиации, навигации, чрезвычайных ситуаций —
+          в сфере здравоохранения, авиации, навигации или чрезвычайных ситуаций
           используйте данные официальных метеослужб (Росгидромет, Copernicus EMS и др.).
         </p>
         <p>
-          Автор проекта (RedSynthesis) не несёт ответственности за любой прямой,
-          косвенный, случайный или иной ущерб, возникший вследствие использования
-          или невозможности использования данного сервиса.
+          Автор проекта не несёт ответственности за любой прямой, косвенный,
+          случайный или иной ущерб, возникший вследствие использования данного сервиса.
         </p>
       </div>
 
-      <div class="prose-card prose-card--info" style="margin-top:1rem">
+      <div class="prose-card prose-card--warning" style="margin-top:1rem">
         <div class="prose-card__icon-row">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-               stroke="var(--color-info)" stroke-width="2.5"
+               stroke="var(--color-warning)" stroke-width="2.5"
                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
+            <polyline points="12 6 12 12 16 14"/>
           </svg>
-          <h3>Лимиты и доступность API</h3>
+          <h3>Актуальность данных</h3>
         </div>
         <p>
-          Open-Meteo предоставляет бесплатный тариф с лимитами: до 10&nbsp;000 запросов
-          в сутки, 5&nbsp;000 в час, 600 в минуту. При превышении лимита или временной
-          недоступности API приложение отображает кешированные данные с указанием
-          времени их получения. Кешированные данные могут не отражать актуальную
-          погодную обстановку.
-        </p>
-        <p>
-          Для профессионального или коммерческого использования с повышенными лимитами
-          обратитесь к
-          <a href="https://open-meteo.com/en/pricing"
-             target="_blank" rel="noopener noreferrer">
-            тарифам Open-Meteo
+          Страница содержит <strong>статический снимок</strong> — данные были
+          получены во время последней сборки и не обновляются в реальном времени.
+          Для получения актуальных данных дождитесь следующей сборки или обратитесь
+          непосредственно к
+          <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">
+            open-meteo.com
           </a>.
         </p>
       </div>
@@ -922,42 +889,38 @@
     <section class="section" aria-labelledby="privacy-heading">
       <h2 class="section__heading" id="privacy-heading">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round"
-             stroke-linejoin="round" aria-hidden="true">
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
         </svg>
         Конфиденциальность
       </h2>
 
-      <div class="prose-card prose-card--danger">
+      <div class="prose-card prose-card--success">
         <div class="prose-card__icon-row">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-               stroke="var(--color-danger)" stroke-width="2.5"
+               stroke="var(--color-success)" stroke-width="2.5"
                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <polyline points="9 12 11 14 15 10"/>
           </svg>
-          <h3>Обработка данных сервисом Open-Meteo</h3>
+          <h3>Данные пользователей не собираются</h3>
         </div>
         <p>
-          <strong>Open-Meteo регистрирует IP-адреса</strong> и URL-адреса всех входящих
-          HTTP-запросов в целях мониторинга использования, защиты от злоупотреблений
-          и соблюдения лимитов. Это означает, что при использовании Live-режима
-          (прямые запросы из браузера) ваш IP-адрес будет передан серверам Open-Meteo.
+          Данное приложение работает как <strong>полностью статический сайт</strong>.
+          Все данные получены заранее — в процессе сборки средствами GitHub Actions —
+          и встроены непосредственно в страницу.
         </p>
         <p>
-          Данное приложение (<strong>Weather Dashboard</strong>) само по себе
-          <strong>не собирает, не хранит и не передаёт</strong> никаких
-          персональных данных пользователей.
-          Все вычисления выполняются локально в браузере или на серверах GitHub Actions.
-          LocalStorage браузера используется исключительно для кеширования
-          метеорологических данных; идентификаторы пользователей не сохраняются.
+          <strong>Ни сайт, ни скрипты не выполняют никаких запросов к внешним
+          серверам из браузера.</strong>
+          Личные данные, IP-адрес, геолокация и история просмотров не собираются,
+          не хранятся и не передаются.
         </p>
         <p>
-          Для ознакомления с политикой конфиденциальности Open-Meteo посетите
-          <a href="https://open-meteo.com/en/privacy-policy"
-             target="_blank" rel="noopener noreferrer">
-            open-meteo.com/en/privacy-policy
-          </a>.
+          Заголовок <code>Content-Security-Policy: connect-src 'none'</code>
+          криптографически запрещает браузеру устанавливать любые исходящие соединения
+          со страниц этого сайта.
         </p>
       </div>
 
@@ -973,18 +936,17 @@
           <h3>GitHub Pages и GitHub Actions</h3>
         </div>
         <p>
-          Данное приложение размещено на
-          <a href="https://pages.github.com/" target="_blank" rel="noopener noreferrer">
-            GitHub Pages
-          </a>.
-          GitHub (Microsoft) может собирать технические метаданные (IP-адрес, User-Agent)
-          согласно собственной
+          Сайт размещён на
+          <a href="https://pages.github.com/"
+             target="_blank" rel="noopener noreferrer">GitHub Pages</a>.
+          GitHub (Microsoft) может собирать технические метаданные (IP-адрес,
+          User-Agent) при загрузке страниц согласно собственной
           <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement"
              target="_blank" rel="noopener noreferrer">
             политике конфиденциальности
           </a>.
-          Снимки данных (Snapshot mode) генерируются GitHub Actions и не передают
-          пользовательские данные никаким третьим сторонам.
+          Снимки данных генерируются GitHub Actions в изолированном окружении;
+          персональные данные пользователей в этом процессе не задействованы.
         </p>
       </div>
     </section>
@@ -995,13 +957,12 @@
     <section class="section" aria-labelledby="license-heading">
       <h2 class="section__heading" id="license-heading">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round"
-             stroke-linejoin="round" aria-hidden="true">
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
           <polyline points="14 2 14 8 20 8"/>
           <line x1="16" y1="13" x2="8" y2="13"/>
           <line x1="16" y1="17" x2="8" y2="17"/>
-          <polyline points="10 9 9 9 8 9"/>
         </svg>
         Лицензии
       </h2>
@@ -1010,19 +971,17 @@
         <div class="license-box">
           <div class="license-box__icon" aria-hidden="true">⚖️</div>
           <div class="license-box__body">
-            <h4>Исходный код приложения — MIT License</h4>
+            <h4>Исходный код — MIT License</h4>
             <p>
               Исходный код проекта
-              <a href="https://github.com/RedSynthesis/Weather-Dashboard-Open-Meteo-API"
-                 target="_blank" rel="noopener noreferrer">
+              <a href="{{ repo_url }}" target="_blank" rel="noopener noreferrer">
                 Weather-Dashboard-Open-Meteo-API
               </a>
               распространяется на условиях лицензии
               <a href="https://opensource.org/licenses/MIT"
                  target="_blank" rel="noopener noreferrer">MIT</a>.
-              Разрешается свободное использование, копирование, изменение, слияние,
-              публикация и распространение. Обязательно сохранение уведомления об
-              авторском праве.
+              Разрешается свободное использование, копирование, изменение и
+              распространение. Обязательно сохранение уведомления об авторском праве.
             </p>
           </div>
         </div>
@@ -1035,25 +994,24 @@
               Метеорологические данные, предоставляемые Open-Meteo, распространяются
               на условиях лицензии
               <a href="https://creativecommons.org/licenses/by/4.0/"
-                 target="_blank" rel="noopener noreferrer">
-                CC BY 4.0
-              </a>.
+                 target="_blank" rel="noopener noreferrer">CC BY 4.0</a>.
               При использовании данных обязательна атрибуция:
               <em>«Источник: Open-Meteo.com (CC BY 4.0)»</em>
               со ссылкой на
-              <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">
-                open-meteo.com
-              </a>.
+              <a href="https://open-meteo.com/"
+                 target="_blank" rel="noopener noreferrer">open-meteo.com</a>.
             </p>
           </div>
         </div>
       </div>
     </section>
 
-  </main>{# /#main-content #}
+  </main>
 
   {# ══════════════════════════════════════════════════════
      FOOTER
+     generated_at     — ISO 8601 (для атрибута datetime)
+     generated_at_human — «ДД.ММ.ГГГГ ЧЧ:ММ UTC» (человекочитаемый)
   ══════════════════════════════════════════════════════ #}
   <footer class="site-footer" role="contentinfo">
     <div class="site-footer__inner">
@@ -1067,69 +1025,50 @@
           </a>
           (CC BY 4.0)
         </p>
-        {# Jinja2: snapshot_timestamp передаётся из generator.py #}
         <p class="site-footer__meta">
-          Последнее обновление снимка:
-          <time datetime="{{ snapshot_timestamp_iso }}">
-            {{ snapshot_timestamp }}
-          </time>
+          Снимок данных:
+          <time datetime="{{ generated_at }}">{{ generated_at_human }}</time>
         </p>
       </div>
 
       <div class="site-footer__right">
-        <span class="site-footer__version">
-          v{{ version }}
-        </span>
+        <span class="site-footer__version">v{{ version }}</span>
         <nav class="site-footer__links" aria-label="Ссылки подвала">
           <a href="index.html">Прогноз</a>
-          <a href="https://github.com/RedSynthesis/Weather-Dashboard-Open-Meteo-API"
+          <a href="{{ repo_url }}"
              target="_blank" rel="noopener noreferrer"
              aria-label="Репозиторий на GitHub (новая вкладка)">
             GitHub
           </a>
-          <a href="https://github.com/RedSynthesis"
+          <a href="https://github.com/{{ author }}"
              target="_blank" rel="noopener noreferrer"
-             aria-label="Профиль RedSynthesis на GitHub (новая вкладка)">
-            RedSynthesis
+             aria-label="Профиль {{ author }} на GitHub (новая вкладка)">
+            {{ author }}
           </a>
         </nav>
       </div>
     </div>
   </footer>
 
-  {# ══════════════════════════════════════════════════════
-     INLINE JS — Intersection Observer для анимаций
-     (без внешних зависимостей)
-  ══════════════════════════════════════════════════════ #}
+  {# Intersection Observer — проявление секций при скролле (без зависимостей) #}
   <script>
     "use strict";
-
-    /**
-     * Intersection Observer — проявление секций при скролле.
-     * Используется вместо jQuery/GSAP (KISS).
-     */
     (() => {
       const sections = document.querySelectorAll(".section");
 
       if (!("IntersectionObserver" in window)) {
-        // Graceful degradation: старые браузеры показывают секции сразу
         sections.forEach((s) => s.classList.add("visible"));
         return;
       }
 
       const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add("visible");
-              observer.unobserve(entry.target);
-            }
-          });
-        },
-        {
-          threshold: 0.08,
-          rootMargin: "0px 0px -40px 0px",
-        }
+        (entries) => entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+            observer.unobserve(entry.target);
+          }
+        }),
+        { threshold: 0.08, rootMargin: "0px 0px -40px 0px" },
       );
 
       sections.forEach((s) => observer.observe(s));
