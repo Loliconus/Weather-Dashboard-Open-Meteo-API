@@ -16,7 +16,7 @@ import re
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
@@ -428,7 +428,7 @@ def _make_jinja_env() -> Environment:
         keep_trailing_newline=True,
     )
 
-    env.globals["_WMO_SVG"] = _WMO_SVG
+    cast(dict[str, Any], env.globals)["_WMO_SVG"] = _WMO_SVG
 
     # Фильтры
     def ru_number(value: float | None, decimals: int = 1) -> str:
